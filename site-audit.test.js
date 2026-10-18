@@ -28,7 +28,13 @@ for(const file of files){
   if(/^(?:https?:|mailto:|tel:|#|data:)/.test(url))continue;
   const target=url.split('#')[0].split('?')[0];
   if(!target)continue;
-  assert.ok(fs.existsSync(path.join(path.dirname(file),target)),file+' references missing '+target);
+  const localPath=path.join(path.dirname(file),target);
+  assert.ok(fs.existsSync(localPath),file+' references missing '+target);
+  const hash=url.split('#')[1];
+  if(hash&&target.endsWith('.html')){
+   const linkedHtml=fs.readFileSync(localPath,'utf8');
+   assert.ok(linkedHtml.includes('id="'+decodeURIComponent(hash)+'"'),file+' links to missing '+target+'#'+hash);
+  }
   linkCount++;
  }
  if(!['privacy.html','terms.html'].includes(file)){
