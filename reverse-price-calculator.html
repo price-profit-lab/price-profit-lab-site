@@ -16,7 +16,7 @@
 <label class="field">販売手数料率（%）<input id="rate" type="number" min="0" max="99.999" step="0.01" value="5" required></label>
 </div><p><button type="button" id="reverseReset" class="secondary-button">サンプルに戻す</button></p></form>
 <p id="reverseError" class="error" role="alert"></p>
-<div id="reverseResult" aria-live="polite"><div class="metrics"><div class="metric"><span>目標利益に必要な販売価格（1円単位・切り上げ）</span><strong id="reversePrice">—</strong></div><div class="metric"><span>その価格で想定件数売れた場合の月間利益</span><strong id="reverseProfit">—</strong></div></div></div>
+<div id="reverseResult"><div class="metrics"><div class="metric"><span>目標利益に必要な販売価格（1円単位・切り上げ）</span><strong id="reversePrice" aria-live="polite" aria-atomic="true">—</strong></div><div class="metric"><span>その価格で想定件数売れた場合の月間利益</span><strong id="reverseProfit">—</strong></div></div></div>
 <p class="note">この結果は入力した販売数が実現することを前提とした試算です。実際の売れ行きや利益を予測・保証しません。販売手数料の端数処理などは概算です。</p>
 </section>
 <section class="panel"><h2>どうやって計算しているの？</h2>
