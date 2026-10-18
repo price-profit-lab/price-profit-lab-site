@@ -8,9 +8,12 @@ function calc(v){
  const oldMargin=oldPrice-unitCost-oldPrice*rate/100-flatFee;
  const newMargin=newPrice-unitCost-newPrice*rate/100-flatFee;
  const before=oldMargin*oldCount-fixedCost,after=newMargin*newCount-fixedCost;
- const needed=newMargin>0?Math.max(0,Math.ceil((before+fixedCost)/newMargin-1e-10)):NaN;
- const breakeven=newMargin>0?Math.max(0,Math.ceil(fixedCost/newMargin-1e-10)):NaN;
- const goal=newMargin>0?Math.max(0,Math.ceil((target+fixedCost)/newMargin-1e-10)):NaN;
+ // When zero sales already meet the target, the required quantity is zero,
+ // even if the per-sale contribution margin is zero or negative.
+ const required=(profit)=>profit<=-fixedCost?0:(newMargin>0?Math.max(0,Math.ceil((profit+fixedCost)/newMargin-1e-10)):NaN);
+ const needed=required(before);
+ const breakeven=required(0);
+ const goal=required(target);
  return {before,after,diff:after-before,needed,breakeven,goal,hourly:hours>0?after/hours:NaN,oldMargin,newMargin};
 }
 const fields=['oldPrice','newPrice','unitCost','oldCount','newCount','fixedCost','rate','flatFee','target','hours'];
