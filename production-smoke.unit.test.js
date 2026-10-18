@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {sitemapPaths}=require('./production-smoke.test.js');
+const {sitemapPaths,validResponse}=require('./production-smoke.test.js');
 const base='https://price-profit-lab.pages.dev';
 const urls=['/', '/product','/reverse-price-calculator','/price-increase-calculator',...Array.from({length:7},(_,i)=>'/guide-'+i)];
 const xml='<urlset>'+urls.map(path=>'<url><loc>'+base+path+'</loc></url>').join('')+'</urlset>';
@@ -11,3 +11,13 @@ assert.throws(()=>sitemapPaths(xml.replace(base+'/price-increase-calculator','ht
 assert.throws(()=>sitemapPaths('<urlset></urlset>'),/short sitemap/);
 assert.throws(()=>sitemapPaths('not XML'),/Missing XML/);
 console.log('Production sitemap parser tests passed');
+
+const assets=['/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/style.css'];
+const assetResponse={status:200,body:'const example = 123;'.repeat(10)};
+assert.equal(validResponse('/calculator.js',assetResponse,assets),true,'Valid JS asset must pass');
+assert.equal(validResponse('/style.css',{status:200,body:'body { margin: 0; }'.repeat(10)},assets),true,'Valid CSS asset must pass');
+assert.equal(validResponse('/calculator.js',{status:404,body:assetResponse.body},assets),false,'Missing asset must fail');
+assert.equal(validResponse('/product',{status:200,body:'<html><title>商品</title><a href="https://price-profit-lab.booth.pm/items/9001298">購入</a></html>'},assets),true);
+assert.equal(validResponse('/product',{status:200,body:'<html><title>商品</title></html>'},assets),false,'Missing purchase link must fail');
+assert.equal(validResponse('/robots.txt',{status:200,body:'User-agent: *\\nSitemap: https://price-profit-lab.pages.dev/sitemap.xml'},assets),true);
+console.log('Production response validation tests passed');
