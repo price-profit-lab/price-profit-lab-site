@@ -5,6 +5,7 @@ on:
     paths:
       - 'calculator.js'
       - 'calculator.test.js'
+      - 'calculator.dom.test.js'
       - 'reverse-price.js'
       - 'reverse-price.test.js'
       - 'reverse-price.dom.test.js'
@@ -16,6 +17,7 @@ on:
     paths:
       - 'calculator.js'
       - 'calculator.test.js'
+      - 'calculator.dom.test.js'
       - 'reverse-price.js'
       - 'reverse-price.test.js'
       - 'reverse-price.dom.test.js'
@@ -34,4 +36,4 @@ jobs:
         with:
           node-version: '22'
       - name: Test profit calculation and boundary cases
-        run: node calculator.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-audit.test.js
+        run: node calculator.test.js && node calculator.dom.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-audit.test.js
