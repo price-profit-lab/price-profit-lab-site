@@ -15,3 +15,5 @@ Run `node test-calculator.js` (Node.js required). The sample scenario should pro
 Cloudflare Pages framework preset: None; build command: none; output directory: `/`.
 
 **Safety:** Do not connect a README-only GitHub repository to production. Verify the complete reconstructed site in a separate staging deployment before switching the live site. This is a reconstruction, not the original source. Review all copy, design, and calculation behavior before production use.
+
+<!-- Deployment sync check: 2026-10-18; no site content changes. -->
