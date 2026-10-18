@@ -5,11 +5,15 @@ on:
     paths:
       - 'calculator.js'
       - 'calculator.test.js'
+      - 'reverse-price.js'
+      - 'reverse-price.test.js'
       - '.github/workflows/calculator-tests.yml'
   pull_request:
     paths:
       - 'calculator.js'
       - 'calculator.test.js'
+      - 'reverse-price.js'
+      - 'reverse-price.test.js'
       - '.github/workflows/calculator-tests.yml'
 permissions:
   contents: read
@@ -22,4 +26,4 @@ jobs:
         with:
           node-version: '22'
       - name: Test profit calculation and boundary cases
-        run: node calculator.test.js
+        run: node calculator.test.js && node reverse-price.test.js
