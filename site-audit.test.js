@@ -54,4 +54,9 @@ for(const file of files){
   assert.ok(sitemap.includes('<loc>'+expected+'</loc>'),file+' missing in sitemap');
  }
 }
+const product=fs.readFileSync('product.html','utf8');
+assert.ok((product.match(/https:\/\/price-profit-lab\.booth\.pm\/items\/9001298/g)||[]).length>=3,'Product page should have multiple purchase links');
+for(const asset of ['calculator.js','reverse-price.js','price-increase-calculator.js','site-events.js','style.css']){
+ assert.ok(fs.existsSync(asset),'Missing public asset '+asset);
+}
 console.log('Static site checks passed: '+files.length+' pages, '+linkCount+' local references');
