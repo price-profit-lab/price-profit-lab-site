@@ -10,6 +10,8 @@ on:
       - 'reverse-price.test.js'
       - 'reverse-price.dom.test.js'
       - 'site-audit.test.js'
+      - 'site-events.js'
+      - 'site-events.test.js'
       - 'sitemap.xml'
       - '**/*.html'
       - '.github/workflows/calculator-tests.yml'
@@ -22,6 +24,8 @@ on:
       - 'reverse-price.test.js'
       - 'reverse-price.dom.test.js'
       - 'site-audit.test.js'
+      - 'site-events.js'
+      - 'site-events.test.js'
       - 'sitemap.xml'
       - '**/*.html'
       - '.github/workflows/calculator-tests.yml'
@@ -36,4 +40,4 @@ jobs:
         with:
           node-version: '22'
       - name: Test profit calculation and boundary cases
-        run: node calculator.test.js && node calculator.dom.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-audit.test.js
+        run: node calculator.test.js && node calculator.dom.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-events.test.js && node site-audit.test.js
