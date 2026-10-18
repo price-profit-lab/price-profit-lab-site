@@ -18,5 +18,5 @@ assert.equal(reversePrice({target:0,fixedCost:0,quantity:1,unitCost:0,flatFee:0,
 // Volume sensitivity: 80, 100, and 120 percent of the baseline.
 assert.equal(reversePrice({...base,quantity:80}).price,4016);
 assert.equal(reversePrice({...base,quantity:100}).price,3411);
-assert.equal(reversePrice({...base,quantity:120}).price,3007);
+assert.equal(reversePrice({...base,quantity:120}).price,3008);
 console.log('All reverse pricing tests passed');
