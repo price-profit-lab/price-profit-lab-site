@@ -1,35 +1,62 @@
 'use strict';
-// Production smoke checks: public pages only; no analytics, credentials or Search Console access.
+// Read-only production checks. No credentials or customer data are accessed.
 const https=require('node:https');
-const base='https://price-profit-lab.pages.dev';
-const pages=['/','/product','/reverse-price-calculator','/price-increase-calculator','/price-increase-notice-guide','/shipping-profit-guide','/sitemap.xml','/robots.txt'];
-function fetchPage(path){
+const BASE='https://price-profit-lab.pages.dev';
+const MAX_BYTES=1500000;
+function fetchText(url){
  return new Promise((resolve,reject)=>{
-  const req=https.get(base+path,{timeout:15000,headers:{'User-Agent':'PriceProfitLab-UptimeCheck/1.0'}},res=>{
+  const req=https.get(url,{timeout:15000,headers:{'User-Agent':'PriceProfitLab-UptimeCheck/1.1'}},res=>{
    let body='';
    res.setEncoding('utf8');
-   res.on('data',chunk=>{body+=chunk;if(body.length>1500000)req.destroy(new Error('Response too large'));});
-   res.on('end',()=>resolve({status:res.statusCode,body,location:res.headers.location}));
+   res.on('data',chunk=>{
+    body+=chunk;
+    if(body.length>MAX_BYTES)req.destroy(new Error('Response too large'));
+   });
+   res.on('end',()=>resolve({status:res.statusCode,body}));
   });
   req.on('timeout',()=>req.destroy(new Error('Timed out')));
   req.on('error',reject);
  });
 }
-async function check(){
- let failed=0;
- for(const path of pages){
-  try{
-   const res=await fetchPage(path);
-   const ok=res.status===200&&(
-    path==='/sitemap.xml'?res.body.includes('<urlset')&&res.body.includes('/price-increase-calculator</loc>'):
-    path==='/robots.txt'?res.body.includes('Sitemap:'):
-    res.body.includes('<html')&&res.body.includes('価格と利益の計算室')
-   );
-   console.log((ok?'PASS':'FAIL')+' '+path+' HTTP '+res.status+(res.location?' -> '+res.location:''));
-   if(!ok)failed++;
-  }catch(err){failed++;console.error('FAIL '+path+' '+err.message);}
+function sitemapPaths(xml){
+ if(!xml.includes('<urlset'))throw new Error('Missing XML sitemap urlset');
+ const urls=[...xml.matchAll(/<loc>\s*(https:\/\/[^<\s]+)\s*<\/loc>/g)].map(m=>m[1]);
+ if(urls.length<10)throw new Error('Unexpectedly short sitemap');
+ const paths=new Set();
+ for(const url of urls){
+  const parsed=new URL(url);
+  if(parsed.origin!==BASE||parsed.search||parsed.hash)throw new Error('Invalid sitemap URL '+url);
+  paths.add(parsed.pathname);
  }
- if(failed){console.error(failed+' production checks failed');process.exitCode=1;}
- else console.log('Production checks passed: '+pages.length+' endpoints');
+ if(paths.size!==urls.length)throw new Error('Duplicate sitemap entries');
+ for(const required of ['/','/product','/reverse-price-calculator','/price-increase-calculator']){
+  if(!paths.has(required))throw new Error('Required sitemap entry missing: '+required);
+ }
+ return [...paths];
 }
-check().catch(err=>{console.error(err);process.exitCode=1;});
+async function run(){
+ const errors=[];
+ let sitemap;
+ try{
+  sitemap=await fetchText(BASE+'/sitemap.xml');
+  if(sitemap.status!==200)throw new Error('HTTP '+sitemap.status);
+ }catch(err){console.error('FAIL /sitemap.xml '+err.message);process.exitCode=1;return;}
+ let paths;
+ try{paths=sitemapPaths(sitemap.body);console.log('PASS /sitemap.xml '+paths.length+' URLs');}
+ catch(err){console.error('FAIL /sitemap.xml '+err.message);process.exitCode=1;return;}
+ const checks=[...paths,'/robots.txt'];
+ for(const path of checks){
+  try{
+   const res=await fetchText(BASE+path);
+   const valid=res.status===200&&(path==='/robots.txt'?
+    res.body.includes('Sitemap:'):
+    /<html\b/i.test(res.body)&&/<title>[^<]+<\/title>/i.test(res.body));
+   console.log((valid?'PASS':'FAIL')+' '+path+' HTTP '+res.status);
+   if(!valid)errors.push(path);
+  }catch(err){console.error('FAIL '+path+' '+err.message);errors.push(path);}
+ }
+ if(errors.length){console.error('Production checks failed: '+errors.join(', '));process.exitCode=1;}
+ else console.log('Production checks passed: '+checks.length+' endpoints and sitemap');
+}
+if(require.main===module)run().catch(err=>{console.error(err);process.exitCode=1;});
+module.exports={sitemapPaths};
