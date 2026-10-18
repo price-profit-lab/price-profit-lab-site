@@ -27,6 +27,9 @@ for(const file of files){
    assert.equal(Number(data.offers.price),2980,file+' product price inconsistent');
   }
  }
+ if(!['privacy.html','terms.html'].includes(file)){
+  assert.match(html,/<script src="site-events\.js"><\/script>/,file+' missing product navigation tracking');
+ }
  const ids=new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]));
  for(const m of html.matchAll(/href="#([^"]+)"/g)){
   assert.ok(ids.has(m[1]),file+' links to missing anchor #'+m[1]);
