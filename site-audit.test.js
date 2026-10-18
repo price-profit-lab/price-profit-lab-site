@@ -9,6 +9,11 @@ for(const file of files){
  const html=fs.readFileSync(file,'utf8');
  const h1=(html.match(/<h1(?:\s|>)/g)||[]).length;
  assert.equal(h1,1,file+' must have exactly one h1');
+ const main=html.match(/<main(?:\s[^>]*)?>([\s\S]*?)<\/main>/);
+ assert.ok(main,file+' missing main landmark');
+ const mainHeading=main[1].search(/<h1(?:\s|>)/);
+ const mainButton=main[1].search(/<a\b[^>]*class="[^"]*button/);
+ if(mainButton!==-1)assert.ok(mainHeading<mainButton,file+' CTA appears before page heading');
  assert.match(html,/<meta name="description"/,file+' must have a meta description');
  assert.match(html,/<link rel="canonical"/,file+' must have a canonical URL');
  assert.match(html,/<html lang="ja"/,file+' must declare Japanese language');
