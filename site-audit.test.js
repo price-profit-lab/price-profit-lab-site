@@ -18,7 +18,7 @@ for(const file of files){
  assert.ok(canonical,file+' missing canonical href');
  const expectedCanonical=file==='index.html'?'https://price-profit-lab.pages.dev/':'https://price-profit-lab.pages.dev/'+file.slice(0,-5);
  assert.equal(canonical[1],expectedCanonical,file+' canonical does not match published path');
- const ids=new Set([...html.matchAll(/\\bid="([^"]+)"/g)].map(m=>m[1]));
+ const ids=new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]));
  for(const m of html.matchAll(/href="#([^"]+)"/g)){
   assert.ok(ids.has(m[1]),file+' links to missing anchor #'+m[1]);
  }
