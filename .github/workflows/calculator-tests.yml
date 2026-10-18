@@ -7,6 +7,9 @@ on:
       - 'calculator.test.js'
       - 'reverse-price.js'
       - 'reverse-price.test.js'
+      - 'site-audit.test.js'
+      - 'sitemap.xml'
+      - '**/*.html'
       - '.github/workflows/calculator-tests.yml'
   pull_request:
     paths:
@@ -14,6 +17,9 @@ on:
       - 'calculator.test.js'
       - 'reverse-price.js'
       - 'reverse-price.test.js'
+      - 'site-audit.test.js'
+      - 'sitemap.xml'
+      - '**/*.html'
       - '.github/workflows/calculator-tests.yml'
 permissions:
   contents: read
