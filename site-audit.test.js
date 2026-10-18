@@ -64,6 +64,9 @@ assert.match(homepage,/id="tool-choice"/,'Homepage missing free vs paid selectio
 for(const target of ['price-increase-calculator.html','reverse-price-calculator.html','product.html#compare']){
  assert.ok(homepage.includes('href="'+target+'"'),'Homepage selection guide missing '+target);
 }
+for(const target of ['online-shop-profit-guide.html','handmade-pricing-guide.html','consignment-profit-guide.html']){
+ assert.ok(homepage.includes('href="'+target+'"'),'Homepage missing audience onboarding link '+target);
+}
 const product=fs.readFileSync('product.html','utf8');
 assert.ok((product.match(/https:\/\/price-profit-lab\.booth\.pm\/items\/9001298/g)||[]).length>=3,'Product page should have multiple purchase links');
 assert.match(product,/購入前の3つの判断ポイント/,'Product page missing buyer qualification');
