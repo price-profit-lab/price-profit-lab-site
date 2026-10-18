@@ -17,6 +17,9 @@ on:
       - 'sitemap.xml'
       - '**/*.html'
       - '.github/workflows/calculator-tests.yml'
+  schedule:
+    - cron: '17 18 * * *'
+  workflow_dispatch:
   pull_request:
     paths:
       - 'calculator.js'
@@ -28,6 +31,8 @@ on:
       - 'site-audit.test.js'
       - 'site-events.js'
       - 'site-events.test.js'
+      - 'price-increase-calculator.js'
+      - 'price-increase-calculator.test.js'
       - 'sitemap.xml'
       - '**/*.html'
       - '.github/workflows/calculator-tests.yml'
