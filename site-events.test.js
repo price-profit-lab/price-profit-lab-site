@@ -40,4 +40,13 @@ for(const e of events.slice(4)){
  assert.equal(e[2].source_page,'/shipping-profit-guide');
  assert.deepEqual(Object.keys(e[2]),['source_page','tool']);
 }
-console.log('Product and free-tool navigation analytics tests passed');
+click('index.html#calculator');
+click('index#calculator');
+click('#calculator');
+assert.equal(events.length,10,'Main calculator navigation should be counted');
+for(const e of events.slice(7)){
+ assert.equal(e[1],'free_tool_navigation');
+ assert.equal(e[2].tool,'profit-calculator');
+ assert.deepEqual(Object.keys(e[2]),['source_page','tool']);
+}
+console.log('Product and all free-tool navigation analytics tests passed');
