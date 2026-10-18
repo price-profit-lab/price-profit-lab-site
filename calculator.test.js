@@ -20,4 +20,11 @@ assert.equal(test({newPrice:800,fixedCost:0,target:0,oldCount:0}).goal,0);
 assert.equal(test({newPrice:800,fixedCost:100,target:0,oldCount:0}).goal,NaN);
 assert.equal(test({rate:10,flatFee:30}).after,(3300-900-330-30)*90-80000);
 assert.equal(test({hours:0}).hourly,NaN);
+// Extra regression cases: fee boundaries, negative profit, and zero-sales targets.
+assert.equal(test({newPrice:3300,rate:100,flatFee:0,unitCost:0}).needed,NaN);
+assert.equal(test({newPrice:3300,rate:0,flatFee:3300,unitCost:0,fixedCost:0,oldCount:0,target:0}).goal,0);
+assert.equal(test({newPrice:1000,unitCost:1500,oldCount:0,newCount:10,fixedCost:0}).after,-5000);
+assert.equal(test({newPrice:1000,unitCost:1500,oldCount:0,newCount:10,fixedCost:0}).needed,0);
+assert.equal(test({newPrice:1000,unitCost:1500,oldCount:0,newCount:10,fixedCost:0}).breakeven,0);
+assert.equal(test({newPrice:1000,unitCost:1500,oldCount:0,newCount:10,fixedCost:0,target:1}).goal,NaN);
 console.log('All calculator boundary tests passed');
