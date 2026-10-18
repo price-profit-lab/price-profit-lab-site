@@ -59,6 +59,11 @@ for(const file of files){
   assert.ok(sitemap.includes('<loc>'+expected+'</loc>'),file+' missing in sitemap');
  }
 }
+const homepage=fs.readFileSync('index.html','utf8');
+assert.match(homepage,/id="tool-choice"/,'Homepage missing free vs paid selection guide');
+for(const target of ['price-increase-calculator.html','reverse-price-calculator.html','product.html#compare']){
+ assert.ok(homepage.includes('href="'+target+'"'),'Homepage selection guide missing '+target);
+}
 const product=fs.readFileSync('product.html','utf8');
 assert.ok((product.match(/https:\/\/price-profit-lab\.booth\.pm\/items\/9001298/g)||[]).length>=3,'Product page should have multiple purchase links');
 for(const asset of ['calculator.js','reverse-price.js','price-increase-calculator.js','site-events.js','style.css']){
