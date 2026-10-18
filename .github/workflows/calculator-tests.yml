@@ -26,4 +26,4 @@ jobs:
         with:
           node-version: '22'
       - name: Test profit calculation and boundary cases
-        run: node calculator.test.js && node reverse-price.test.js
+        run: node calculator.test.js && node reverse-price.test.js && node site-audit.test.js
