@@ -11,6 +11,18 @@ for(const file of files){
  assert.equal(h1,1,file+' must have exactly one h1');
  assert.match(html,/<meta name="description"/,file+' must have a meta description');
  assert.match(html,/<link rel="canonical"/,file+' must have a canonical URL');
+ assert.match(html,/<html lang="ja"/,file+' must declare Japanese language');
+ assert.match(html,/<meta name="viewport"/,file+' must have mobile viewport');
+ assert.match(html,/<title>[^<]+<\/title>/,file+' must have a title');
+ const canonical=html.match(/<link rel="canonical" href="([^"]+)"/);
+ assert.ok(canonical,file+' missing canonical href');
+ const expectedCanonical=file==='index.html'?'https://price-profit-lab.pages.dev/':'https://price-profit-lab.pages.dev/'+file.slice(0,-5);
+ assert.equal(canonical[1],expectedCanonical,file+' canonical does not match published path');
+ const ids=new Set([...html.matchAll(/\\bid="([^"]+)"/g)].map(m=>m[1]));
+ for(const m of html.matchAll(/href="#([^"]+)"/g)){
+  assert.ok(ids.has(m[1]),file+' links to missing anchor #'+m[1]);
+ }
+
  for(const m of html.matchAll(/(?:href|src)="([^"]+)"/g)){
   const url=m[1];
   if(/^(?:https?:|mailto:|tel:|#|data:)/.test(url))continue;
