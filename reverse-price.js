@@ -26,6 +26,19 @@ if(typeof document!=='undefined'){
    document.getElementById('reverseResult').hidden=false;
    document.getElementById('reversePrice').textContent=fmt(r.price);
    document.getElementById('reverseProfit').textContent=fmt(r.monthlyProfit);
+   const scenarios=document.getElementById('reverseScenarios');
+   if(scenarios){
+    scenarios.replaceChildren();
+    for(const pct of [80,100,120]){
+     const qty=Math.max(1,Math.floor(v.quantity*pct/100));
+     const result=reversePrice({...v,quantity:qty});
+     const tr=document.createElement('tr');
+     for(const value of [pct+'%',qty.toLocaleString('ja-JP')+'件',result?fmt(result.price):'算出不可']){
+      const td=document.createElement('td');td.textContent=value;tr.append(td);
+     }
+     scenarios.append(tr);
+    }
+   }
   }
   function showError(){
    document.getElementById('reverseError').textContent='0以上の数値を入力してください。販売数は1以上の整数、手数料率は0%以上100%未満です。';
