@@ -18,3 +18,6 @@ a:focus-visible,input:focus-visible{outline:3px solid #d39432;outline-offset:3px
 a.secondary-button{display:inline-block;text-decoration:none}
 
 #reversePricingForm{scroll-margin-top:20px}
+
+.upgrade-note{background:#f1f6f0;border:1px solid #d0dfd1;border-radius:12px;padding:16px;margin:24px 0}
+.upgrade-note h2{margin-top:0}
