@@ -1,5 +1,11 @@
 name: Production site monitor
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'production-smoke.test.js'
+      - '.github/workflows/production-monitor.yml'
+      - 'sitemap.xml'
   schedule:
     - cron: '37 18 * * *'
   workflow_dispatch:
