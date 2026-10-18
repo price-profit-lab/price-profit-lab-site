@@ -24,5 +24,5 @@ function update(){const v={};for(const f of fields){const el=$(f),n=Number(el.va
  $('diff').className=r.diff>=0?'good':'bad';
  const rows=[0,5,10,15,20,25,30,40,50];$('scenarios').replaceChildren();for(const pct of rows){const qty=Math.floor(v.oldCount*(1-pct/100));const p=r.newMargin*qty-v.fixedCost;const tr=document.createElement('tr');for(const s of [pct+'%',qty.toLocaleString('ja-JP')+'件',yen(p),yen(p-r.before)]){const td=document.createElement('td');td.textContent=s;tr.append(td)}$('scenarios').append(tr)}
 }
-if(typeof document!=='undefined'&&$('oldPrice')){fields.forEach(f=>$(f).addEventListener('input',update));update();}
+if(typeof document!=='undefined'&&$('oldPrice')){let used=false;fields.forEach(f=>$(f).addEventListener('input',()=>{update();if(!used&&!$('error').textContent){used=true;if(typeof gtag==='function')gtag('event','calculator_interaction');}}));update();}
 if(typeof module!=='undefined')module.exports={calc};
