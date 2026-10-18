@@ -1,0 +1,25 @@
+name: Calculator checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'calculator.js'
+      - 'calculator.test.js'
+      - '.github/workflows/calculator-tests.yml'
+  pull_request:
+    paths:
+      - 'calculator.js'
+      - 'calculator.test.js'
+      - '.github/workflows/calculator-tests.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test profit calculation and boundary cases
+        run: node calculator.test.js
