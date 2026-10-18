@@ -44,7 +44,8 @@ async function run(){
  let paths;
  try{paths=sitemapPaths(sitemap.body);console.log('PASS /sitemap.xml '+paths.length+' URLs');}
  catch(err){console.error('FAIL /sitemap.xml '+err.message);process.exitCode=1;return;}
- const checks=[...paths,'/robots.txt'];
+ const assets=['/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/style.css'];
+ const checks=[...paths,'/robots.txt',...assets];
  for(const path of checks){
   try{
    const res=await fetchText(BASE+path);
