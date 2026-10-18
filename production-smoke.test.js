@@ -34,6 +34,13 @@ function sitemapPaths(xml){
  }
  return [...paths];
 }
+function validResponse(path,res,assets){
+ return res.status===200&&(path==='/robots.txt'?
+  res.body.includes('Sitemap:'):
+  assets.includes(path)?res.body.length>100:
+  /<html\\b/i.test(res.body)&&/<title>[^<]+<\\/title>/i.test(res.body)&&
+  (path!=='/product'||res.body.includes('https://price-profit-lab.booth.pm/items/9001298')));
+}
 async function run(){
  const errors=[];
  let sitemap;
@@ -49,11 +56,7 @@ async function run(){
  for(const path of checks){
   try{
    const res=await fetchText(BASE+path);
-   const valid=res.status===200&&(path==='/robots.txt'?
-    res.body.includes('Sitemap:'):
-    assets.includes(path)?res.body.length>100:
-    /<html\b/i.test(res.body)&&/<title>[^<]+<\/title>/i.test(res.body)&&
-    (path!=='/product'||res.body.includes('https://price-profit-lab.booth.pm/items/9001298')));
+   const valid=validResponse(path,res,assets);
    console.log((valid?'PASS':'FAIL')+' '+path+' HTTP '+res.status);
    if(!valid)errors.push(path);
   }catch(err){console.error('FAIL '+path+' '+err.message);errors.push(path);}
@@ -62,4 +65,4 @@ async function run(){
  else console.log('Production checks passed: '+checks.length+' endpoints and sitemap');
 }
 if(require.main===module)run().catch(err=>{console.error(err);process.exitCode=1;});
-module.exports={sitemapPaths};
+module.exports={sitemapPaths,validResponse};
