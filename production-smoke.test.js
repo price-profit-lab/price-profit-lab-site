@@ -51,7 +51,9 @@ async function run(){
    const res=await fetchText(BASE+path);
    const valid=res.status===200&&(path==='/robots.txt'?
     res.body.includes('Sitemap:'):
-    /<html\b/i.test(res.body)&&/<title>[^<]+<\/title>/i.test(res.body));
+    assets.includes(path)?res.body.length>100:
+    /<html\b/i.test(res.body)&&/<title>[^<]+<\/title>/i.test(res.body)&&
+    (path!=='/product'||res.body.includes('https://price-profit-lab.booth.pm/items/9001298')));
    console.log((valid?'PASS':'FAIL')+' '+path+' HTTP '+res.status);
    if(!valid)errors.push(path);
   }catch(err){console.error('FAIL '+path+' '+err.message);errors.push(path);}
