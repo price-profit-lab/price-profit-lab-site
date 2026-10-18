@@ -67,6 +67,9 @@ for(const target of ['price-increase-calculator.html','reverse-price-calculator.
 for(const target of ['online-shop-profit-guide.html','handmade-pricing-guide.html','consignment-profit-guide.html']){
  assert.ok(homepage.includes('href="'+target+'"'),'Homepage missing audience onboarding link '+target);
 }
+const share=fs.readFileSync('share.html','utf8');
+assert.match(share,/サイト名・提供元の表記/,'Sharing page must explain brand-only attribution');
+assert.match(share,/「価格と利益の計算室」/,'Sharing page must name the public brand');
 const product=fs.readFileSync('product.html','utf8');
 assert.ok((product.match(/https:\/\/price-profit-lab\.booth\.pm\/items\/9001298/g)||[]).length>=3,'Product page should have multiple purchase links');
 assert.match(product,/購入前の3つの判断ポイント/,'Product page missing buyer qualification');
