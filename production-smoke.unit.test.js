@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {sitemapPaths}=require('./production-smoke.test.js');
+const base='https://price-profit-lab.pages.dev';
+const urls=['/', '/product','/reverse-price-calculator','/price-increase-calculator',...Array.from({length:7},(_,i)=>'/guide-'+i)];
+const xml='<urlset>'+urls.map(path=>'<url><loc>'+base+path+'</loc></url>').join('')+'</urlset>';
+assert.equal(sitemapPaths(xml).length,urls.length);
+assert.throws(()=>sitemapPaths(xml.replace('</urlset>','<url><loc>'+base+'/product</loc></url></urlset>')),/Duplicate/);
+assert.throws(()=>sitemapPaths(xml.replace(base+'/product','https://example.com/product')),/Invalid sitemap URL/);
+assert.throws(()=>sitemapPaths(xml.replace(base+'/price-increase-calculator','https://example.com/other')),/Invalid sitemap URL/);
+assert.throws(()=>sitemapPaths('<urlset></urlset>'),/short sitemap/);
+assert.throws(()=>sitemapPaths('not XML'),/Missing XML/);
+console.log('Production sitemap parser tests passed');
