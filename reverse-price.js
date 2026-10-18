@@ -24,6 +24,7 @@ if(typeof document!=='undefined'){
    if(!r){showError();return;}
    document.getElementById('reverseError').textContent='';
    document.getElementById('reverseResult').hidden=false;
+   document.getElementById('reverseSensitivity').hidden=false;
    document.getElementById('reversePrice').textContent=fmt(r.price);
    document.getElementById('reverseProfit').textContent=fmt(r.monthlyProfit);
    const scenarios=document.getElementById('reverseScenarios');
@@ -43,6 +44,7 @@ if(typeof document!=='undefined'){
   function showError(){
    document.getElementById('reverseError').textContent='0以上の数値を入力してください。販売数は1以上の整数、手数料率は0%以上100%未満です。';
    document.getElementById('reverseResult').hidden=true;
+   document.getElementById('reverseSensitivity').hidden=true;
   }
   let tracked=false;
   form.addEventListener('input',()=>{update();if(!tracked&&!document.getElementById('reverseError').textContent){tracked=true;if(typeof gtag==='function')gtag('event','reverse_price_interaction');}});
