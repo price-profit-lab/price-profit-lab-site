@@ -17,7 +17,7 @@
 </div><p><button type="button" id="reverseReset" class="secondary-button">サンプルに戻す</button></p></form>
 <p id="reverseError" class="error" role="alert"></p>
 <div id="reverseResult"><div class="metrics"><div class="metric"><span>目標利益に必要な販売価格（1円単位・切り上げ）</span><strong id="reversePrice" aria-live="polite" aria-atomic="true">—</strong></div><div class="metric"><span>その価格で想定件数売れた場合の月間利益</span><strong id="reverseProfit">—</strong></div></div></div>
-<p class="note">この結果は入力した販売数が実現することを前提とした試算です。実際の売れ行きや利益を予測・保証しません。販売手数料の端数処理などは概算です。</p>
+<h3>販売数が変わった場合の必要価格</h3><p class="note">想定販売数の80％・100％・120％で目標利益を達成するための最低価格を比較します。件数は切り捨て、最低1件として計算します。</p><div class="tablewrap"><table><thead><tr><th>想定販売数比</th><th>販売数</th><th>必要な販売価格</th></tr></thead><tbody id="reverseScenarios"></tbody></table></div><p class="note">この結果は入力した販売数が実現することを前提とした試算です。実際の売れ行きや利益を予測・保証しません。販売手数料の端数処理などは概算です。</p>
 </section>
 <section class="panel"><h2>どうやって計算しているの？</h2>
 <p>必要販売価格＝｛（目標月間利益＋月間固定費）÷想定販売数＋1件あたり変動費＋定額手数料｝÷（1−手数料率）。手数料率5％なら0.05を使います。計算結果は1円単位で切り上げます。</p>
