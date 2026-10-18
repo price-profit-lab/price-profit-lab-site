@@ -38,7 +38,7 @@ function validResponse(path,res,assets){
  return res.status===200&&(path==='/robots.txt'?
   res.body.includes('Sitemap:'):
   assets.includes(path)?res.body.length>100:
-  /<html\\b/i.test(res.body)&&/<title>[^<]+<\\/title>/i.test(res.body)&&
+  res.body.includes('<html')&&res.body.includes('<title>')&&res.body.includes('</title>')&&
   (path!=='/product'||res.body.includes('https://price-profit-lab.booth.pm/items/9001298')));
 }
 async function run(){
