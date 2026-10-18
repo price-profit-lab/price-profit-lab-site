@@ -18,6 +18,15 @@ for(const file of files){
  assert.ok(canonical,file+' missing canonical href');
  const expectedCanonical=file==='index.html'?'https://price-profit-lab.pages.dev/':'https://price-profit-lab.pages.dev/'+file.slice(0,-5);
  assert.equal(canonical[1],expectedCanonical,file+' canonical does not match published path');
+ for(const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)){
+  const data=JSON.parse(m[1]);
+  assert.equal(data['@context'],'https://schema.org',file+' JSON-LD context invalid');
+  assert.ok(data['@type'],file+' JSON-LD type missing');
+  if(data['@type']==='Product'){
+   assert.equal(data.offers.priceCurrency,'JPY',file+' product currency invalid');
+   assert.equal(Number(data.offers.price),2980,file+' product price inconsistent');
+  }
+ }
  const ids=new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]));
  for(const m of html.matchAll(/href="#([^"]+)"/g)){
   assert.ok(ids.has(m[1]),file+' links to missing anchor #'+m[1]);
