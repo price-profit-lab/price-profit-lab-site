@@ -3,3 +3,9 @@
 .product-preview{background:#f1f6f0;border:1px solid #d0dfd1;border-radius:14px;padding:18px;margin:14px 0 28px}.preview-title{font-weight:700;margin-bottom:12px}.preview-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.preview-cards>div{background:white;border:1px solid #d7e3d8;border-radius:9px;padding:12px}.preview-cards strong,.preview-cards span{display:block}.preview-cards strong{font-size:18px;color:#205c45}.preview-cards span{font-size:12px}.preview-bars{margin-top:14px;display:grid;gap:6px}.preview-bars span{display:block;background:#6ca58a;height:9px;border-radius:9px}@media(max-width:560px){.preview-cards{grid-template-columns:1fr}}
 
 .product-toc{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;background:#f1f6f0;border:1px solid #d0dfd1;border-radius:12px;padding:14px;margin:22px 0}.product-toc strong{flex-basis:100%;color:#20352f}.product-toc a{display:inline-block;padding:6px 10px;border:1px solid #c7dacd;border-radius:8px;background:white;text-decoration:none;font-size:14px}.product-toc a:hover,.product-toc a:focus-visible{background:#e1eee4;text-decoration:underline}h2[id]{scroll-margin-top:18px}
+
+/* Keep anchored calculator visible and keyboard focus apparent. */
+#calculator{scroll-margin-top:16px}
+a:focus-visible,input:focus-visible{outline:3px solid #d39432;outline-offset:3px}
+.button:hover{background:#174936}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
