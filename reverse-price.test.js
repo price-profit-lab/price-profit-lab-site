@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {reversePrice}=require('./reverse-price.js');
+const base={target:150000,fixedCost:80000,quantity:100,unitCost:900,flatFee:40,rate:5};
+const r=reversePrice(base);
+assert.equal(r.price,3411);
+assert.ok(r.monthlyProfit>=150000);
+assert.equal(reversePrice({...base,quantity:80}).price,4016);
+assert.equal(reversePrice({...base,rate:0,flatFee:0}).price,3200);
+assert.equal(reversePrice({...base,quantity:0}),null);
+assert.equal(reversePrice({...base,quantity:1.5}),null);
+assert.equal(reversePrice({...base,rate:100}),null);
+assert.equal(reversePrice({...base,rate:-1}),null);
+assert.equal(reversePrice({...base,target:-1}),null);
+assert.equal(reversePrice({...base,quantity:NaN}),null);
+assert.equal(reversePrice({...base,quantity:1,rate:99.9999,target:100000000000}),null);
+assert.equal(reversePrice({target:0,fixedCost:0,quantity:1,unitCost:0,flatFee:0,rate:0}).price,0);
+console.log('All reverse pricing tests passed');
