@@ -30,4 +30,14 @@ click('https://price-profit-lab.booth.pm/items/9001298');
 assert.equal(events.length,4,'Unrelated links must not be counted');
 listeners.click({target:{closest(){return null}}});
 assert.equal(events.length,4);
-console.log('Internal product navigation analytics tests passed');
+click('reverse-price-calculator.html');
+click('price-increase-calculator.html');
+click('price-increase-calculator#example');
+assert.equal(events.length,7,'Free tool navigation should be counted');
+assert.deepEqual(events.slice(4).map(e=>e[1]),['free_tool_navigation','free_tool_navigation','free_tool_navigation']);
+assert.deepEqual(events.slice(4).map(e=>e[2].tool),['reverse-price-calculator','price-increase-calculator','price-increase-calculator']);
+for(const e of events.slice(4)){
+ assert.equal(e[2].source_page,'/shipping-profit-guide');
+ assert.deepEqual(Object.keys(e[2]),['source_page','tool']);
+}
+console.log('Product and free-tool navigation analytics tests passed');
