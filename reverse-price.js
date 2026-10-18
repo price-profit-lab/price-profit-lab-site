@@ -7,7 +7,8 @@ function reversePrice(v){
     !Number.isInteger(quantity)||rate<0||rate>=100)return null;
  const exact=((target+fixedCost)/quantity+unitCost+flatFee)/(1-rate/100);
  if(!Number.isFinite(exact)||exact<0)return null;
- const price=Math.ceil(exact-1e-9);
+ const price=Math.ceil(exact);
+ if(!Number.isSafeInteger(price))return null;
  const monthlyProfit=(price*(1-rate/100)-unitCost-flatFee)*quantity-fixedCost;
  return {price,monthlyProfit,exact};
 }
