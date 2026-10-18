@@ -13,3 +13,6 @@ a:focus-visible,input:focus-visible{outline:3px solid #d39432;outline-offset:3px
 .secondary-button{background:#fff;color:#205c45;border:1px solid #205c45;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer}
 .secondary-button:hover{background:#edf4ed}
 .secondary-button:focus-visible{outline:3px solid #d39432;outline-offset:3px}
+
+.hero-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+a.secondary-button{display:inline-block;text-decoration:none}
