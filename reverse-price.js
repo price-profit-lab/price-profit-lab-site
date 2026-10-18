@@ -10,6 +10,7 @@ function reversePrice(v){
  const price=Math.ceil(exact);
  if(!Number.isSafeInteger(price))return null;
  const monthlyProfit=(price*(1-rate/100)-unitCost-flatFee)*quantity-fixedCost;
+ if(!Number.isFinite(monthlyProfit))return null;
  return {price,monthlyProfit,exact};
 }
 if(typeof document!=='undefined'){
