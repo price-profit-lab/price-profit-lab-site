@@ -77,7 +77,8 @@ function validResponse(path,res,assets,expectedHeading){
   '/':['href="service-excel.html"'],
   '/service-excel':['https://price-profit-lab.booth.pm/items/9011039','https://price-profit-lab.booth.pm/items/9011528','1,480円','2,980円','href="service-pricing-guide.html"'],
   '/service-pricing-guide':['<h1>サービス業の料金の決め方','165,600円','195,420円','href="service-excel.html"'],
-  '/guides':['href="service-pricing-guide.html"']
+  '/guides':['href="service-pricing-guide.html"'],
+  '/en/':['<html lang="en"','id="oldPrice"','id="newPrice"','id="error"']
  };
  const expectedProducts={'/product':['9001298'],'/service-excel':['9011039','9011528']};
  if(expectedProducts[path]&&!validPurchaseLinks(html,expectedProducts[path]))return false;
@@ -94,13 +95,15 @@ async function checkOnce(){
  try{paths=sitemapPaths(sitemap.body,fs.readFileSync(pathModule.join(__dirname,'sitemap.xml'),'utf8'));console.log('PASS /sitemap.xml '+paths.length+' URLs');}
  catch(err){console.error('FAIL /sitemap.xml '+err.message);return false;}
  const assets=['/cancellation-calculator.js','/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/style.css'];
- const checks=[...paths,'/robots.txt',...assets];
+ // Include the English calculator even though it is not in the Japanese sitemap.
+ const pages=[...new Set([...paths,'/en/'])];
+ const checks=[...pages,'/robots.txt',...assets];
  for(let offset=0;offset<checks.length;offset+=6){
   await Promise.all(checks.slice(offset,offset+6).map(async path=>{
    try{
     let expectedHeading;
-    if(paths.includes(path)){
-     const localFile=path==='/'?'index.html':path.slice(1)+'.html';
+    if(pages.includes(path)){
+     const localFile=path==='/'?'index.html':path.endsWith('/')?path.slice(1)+'index.html':path.slice(1)+'.html';
      const local=fs.readFileSync(pathModule.join(__dirname,localFile),'utf8');
      const match=local.match(/<h1(?:\s[^>]*)?>([\s\S]*?)<\/h1>/i);
      if(!match)throw new Error('Repository page missing h1');

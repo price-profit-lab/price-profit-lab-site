@@ -73,6 +73,15 @@ assert.equal(validResponse('/cancellation-profit-guide',page('/wrong',article),a
 assert.equal(validResponse('/cancellation-profit-guide',page('/cancellation-profit-guide',article),assets,'Updated heading'),false,'Stale heading must fail');
 console.log('Repository sitemap, generic fallback and stale heading checks passed');
 
+const english='<html lang="en"><title>Profit calculator</title><h1>Calculate profit</h1><input id="oldPrice"><input id="newPrice"><p id="error"></p></html>';
+assert.equal(validResponse('/en/',page('/en/',english),assets,'Calculate profit'),true);
+assert.equal(validResponse('/en/',page('/',english),assets,'Calculate profit'),false,'English homepage fallback must fail');
+assert.equal(validResponse('/en/',page('/en/',english.replace('lang="en"','lang="ja"')),assets,'Calculate profit'),false,'Wrong language must fail');
+assert.equal(validResponse('/en/',page('/en/',english.replace('id="error"','id="missing"')),assets,'Calculate profit'),false,'Missing calculator error output must fail');
+assert.equal(validResponse('/en/',{status:404,body:english},assets,'Calculate profit'),false);
+assert.equal(validResponse('/en/',page('/en/',english),assets,'New heading'),false,'Stale English heading must fail');
+console.log('English calculator production identity and fallback checks passed');
+
 (async()=>{
  let attempts=0,waits=0;
  assert.equal(await run(async()=>++attempts===3,async ms=>{assert.equal(ms,20000);waits++;}),true,'Deployment propagation can recover');
