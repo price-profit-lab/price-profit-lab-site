@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {sitemapPaths,validPurchaseLinks,validResponse,validImageResponse,run}=require('./production-smoke.test.js');
+const {sitemapPaths,validPurchaseLinks,validResponse,validImageResponse,validAssetResponse,run}=require('./production-smoke.test.js');
 const {createHash}=require('node:crypto');
 const fs=require('node:fs');
 const pathModule=require('node:path');
@@ -17,13 +17,22 @@ assert.throws(()=>sitemapPaths('not XML'),/Missing XML/);
 console.log('Production sitemap parser tests passed');
 
 const assets=['/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/style.css'];
-const assetResponse={status:200,body:'const example = 123;'.repeat(10)};
-assert.equal(validResponse('/calculator.js',assetResponse,assets),true,'Valid JS asset must pass');
-assert.equal(validResponse('/style.css',{status:200,body:'body { margin: 0; }'.repeat(10)},assets),true,'Valid CSS asset must pass');
+const assetResponse={status:200,body:Buffer.from('const example = "日本語";'.repeat(10))};
+const assetHash=createHash('sha256').update(assetResponse.body).digest('hex');
+const css=Buffer.from('body { margin: 0; }'.repeat(10));
+assert.equal(validResponse('/calculator.js',assetResponse,assets,undefined,assetHash),true,'Valid JS asset must pass');
+assert.equal(validResponse('/style.css',{status:200,body:css},assets,undefined,createHash('sha256').update(css).digest('hex')),true,'Valid CSS asset must pass');
 assert.equal(validResponse('/calculator.js',{status:404,body:assetResponse.body},assets),false,'Missing asset must fail');
 assert.equal(validResponse('/product',page('/product','<html><title>商品</title><a href="https://price-profit-lab.booth.pm/items/9001298">購入</a></html>'),assets),true);
 assert.equal(validResponse('/product',page('/product','<html><title>商品</title></html>'),assets),false,'Missing purchase link must fail');
 assert.equal(validResponse('/robots.txt',{status:200,body:'User-agent: *\\nSitemap: https://price-profit-lab.pages.dev/sitemap.xml'},assets),true);
+assert.equal(validResponse('/site-events.js',{status:200,body:Buffer.from('<html>fallback</html>'.repeat(20))},assets,undefined,assetHash),false,'HTML fallback is not the expected script');
+assert.equal(validResponse('/calculator.js',assetResponse,assets),false,'Missing reference hash must fail closed');
+assert.equal(validAssetResponse(assetResponse,assetHash),true,'Exact bytes, including Japanese text, must pass');
+assert.equal(validAssetResponse({status:200,body:assetResponse.body.subarray(0,-1)},assetHash),false,'Truncation must fail');
+assert.equal(validAssetResponse({status:200,body:Buffer.from('old script')},assetHash),false,'Stale code must fail');
+assert.equal(validAssetResponse({status:404,body:assetResponse.body},assetHash),false,'HTTP failure must fail');
+assert.equal(validAssetResponse({status:200,body:assetResponse.body.toString('utf8')},assetHash),false,'Require bytes for asset integrity');
 console.log('Production response validation tests passed');
 
 const service='<html><title>サービス料金</title><h1>比較</h1><a href="https://price-profit-lab.booth.pm/items/9011039">Standard</a><a href="https://price-profit-lab.booth.pm/items/9011528">Pro</a><p>1,480円 / 2,980円</p><a href="service-pricing-guide.html">ガイド</a></html>';
