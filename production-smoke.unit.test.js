@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {sitemapPaths,validResponse}=require('./production-smoke.test.js');
+const {sitemapPaths,validResponse,run}=require('./production-smoke.test.js');
 const base='https://price-profit-lab.pages.dev';
 function page(path,body){return {status:200,body:'<link rel="canonical" href="'+base+path+'">'+body};}
 const urls=['/', '/product','/reverse-price-calculator','/price-increase-calculator','/service-excel','/service-pricing-guide',...Array.from({length:7},(_,i)=>'/guide-'+i)];
@@ -50,3 +50,13 @@ assert.equal(validResponse('/cancellation-profit-guide',{status:200,body:article
 assert.equal(validResponse('/cancellation-profit-guide',page('/wrong',article),assets),false,'Wrong canonical must fail');
 assert.equal(validResponse('/cancellation-profit-guide',page('/cancellation-profit-guide',article),assets,'Updated heading'),false,'Stale heading must fail');
 console.log('Repository sitemap, generic fallback and stale heading checks passed');
+
+(async()=>{
+ let attempts=0,waits=0;
+ assert.equal(await run(async()=>++attempts===3,async ms=>{assert.equal(ms,20000);waits++;}),true,'Deployment propagation can recover');
+ assert.equal(attempts,3);assert.equal(waits,2);
+ attempts=0;waits=0;
+ assert.equal(await run(async()=>{attempts++;return false;},async()=>{waits++;}),false,'Persistent failure must fail');
+ assert.equal(attempts,3);assert.equal(waits,2);
+ console.log('Deployment retry recovery and exhaustion checks passed');
+})().catch(err=>{console.error(err);process.exitCode=1;});

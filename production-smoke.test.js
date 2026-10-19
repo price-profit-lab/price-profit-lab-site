@@ -73,7 +73,7 @@ async function checkOnce(){
  }catch(err){console.error('FAIL /sitemap.xml '+err.message);return false;}
  let paths;
  try{paths=sitemapPaths(sitemap.body,fs.readFileSync(pathModule.join(__dirname,'sitemap.xml'),'utf8'));console.log('PASS /sitemap.xml '+paths.length+' URLs');}
- catch(err){console.error('FAIL /sitemap.xml '+err.message);process.exitCode=1;return;}
+ catch(err){console.error('FAIL /sitemap.xml '+err.message);return false;}
  const assets=['/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/style.css'];
  const checks=[...paths,'/robots.txt',...assets];
  for(let offset=0;offset<checks.length;offset+=6){
@@ -98,13 +98,13 @@ async function checkOnce(){
  console.log('Production checks passed: '+checks.length+' endpoints and sitemap');
  return true;
 }
-async function run(){
+async function run(check=checkOnce,wait=ms=>new Promise(resolve=>setTimeout(resolve,ms))){
  for(let attempt=1;attempt<=3;attempt++){
   console.log('Production check attempt '+attempt+'/3');
-  if(await checkOnce())return;
-  if(attempt<3)await new Promise(resolve=>setTimeout(resolve,20000));
+  if(await check())return true;
+  if(attempt<3)await wait(20000);
  }
- process.exitCode=1;
+ return false;
 }
-if(require.main===module)run().catch(err=>{console.error(err);process.exitCode=1;});
-module.exports={sitemapPaths,validResponse};
+if(require.main===module)run().then(ok=>{if(!ok)process.exitCode=1;}).catch(err=>{console.error(err);process.exitCode=1;});
+module.exports={sitemapPaths,validResponse,run};
