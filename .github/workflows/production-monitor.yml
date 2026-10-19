@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'production-smoke.test.js'
+      - 'production-smoke.unit.test.js'
+      - '*.html'
       - '.github/workflows/production-monitor.yml'
       - 'sitemap.xml'
   schedule:
@@ -14,7 +16,7 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
