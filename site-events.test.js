@@ -66,3 +66,26 @@ for(const href of ['https://example.com/service-excel.html','service-excel-copy.
 }
 assert.equal(events.length,beforeService+5,'Unrelated and separately tracked purchase links must not be counted as comparison navigation');
 console.log('Service comparison navigation analytics tests passed');
+
+const beforeCancellation=events.length;
+for(const href of ['cancellation-calculator.html','cancellation-calculator','./cancellation-calculator.html','cancellation-calculator.html?ref=home']){
+ click(href);
+}
+assert.equal(events.length,beforeCancellation+4);
+for(const event of events.slice(beforeCancellation)){
+ assert.equal(event[1],'free_tool_navigation');
+ assert.equal(event[2].tool,'cancellation-calculator');
+ assert.deepEqual(Object.keys(event[2]),['source_page','tool'],'Do not send input amounts or URL query parameters');
+}
+click('cancellation-calculator-copy.html');
+click('https://example.com/cancellation-calculator.html');
+assert.equal(events.length,beforeCancellation+4);
+const selfEvents=[];
+const selfListeners={};
+vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),{
+ document:{addEventListener(type,fn){selfListeners[type]=fn}},
+ location:{pathname:'/cancellation-calculator'},gtag:(...args)=>selfEvents.push(args)
+});
+selfListeners.click({target:{closest(){return {getAttribute(){return 'cancellation-calculator.html'}}}}});
+assert.equal(selfEvents.length,0,'Do not count navigation to current calculator');
+console.log('Cancellation free-tool navigation and privacy checks passed');
