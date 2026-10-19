@@ -14,6 +14,13 @@
    gtag('event','service_product_detail_click',{source_page:page});
    return;
   }
+  // Only classify the two original screenshots on the product comparison page.
+  // Send fixed labels only; never send image URLs, query strings or form values.
+  const screenshot=/^(?:\.\/)?assets\/(service-standard-excel-mac|service-pro-actions-excel-mac)\.png$/.exec(href);
+  if((page==='/service-excel'||page==='/service-excel.html')&&screenshot){
+   gtag('event','product_screenshot_click',{source_page:page,edition:screenshot[1]==='service-standard-excel-mac'?'standard':'pro'});
+   return;
+  }
   // Track free-tool navigation, including the homepage calculator anchor. No form values are sent.
   if(/^(?:index(?:\.html)?)?#calculator$/.test(href)&&page!=='/'&&page!=='/index.html'){
    gtag('event','free_tool_navigation',{source_page:page,tool:'profit-calculator'});
