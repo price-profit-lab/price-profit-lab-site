@@ -31,14 +31,16 @@ const ids=['oldPrice','newPrice','unitCost','oldCount','newCount','fixedCost','r
 const defaults=[30,33,9,100,90,800,0,0];
 const el=id=>document.getElementById(id);
 const format=n=>(el('currency').value.trim()||'')+new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(n);
+function invalidate(message){el('error').textContent=message;for(const id of ['before','after','diff','needed'])el(id).textContent='—';el('scenarios').replaceChildren();}
 function update(){
 const a=ids.map(id=>Number(el(id).value));
 const error=ids.find((id,i)=>el(id).value.trim()===''||!Number.isFinite(a[i])||a[i]<0);
-if(error||a[6]>100||!Number.isInteger(a[3])||!Number.isInteger(a[4])){el('error').textContent='Enter valid non-negative numbers, whole-number sales volumes, and a fee between 0 and 100%.';for(const id of ['before','after','diff','needed'])el(id).textContent='—';el('scenarios').replaceChildren();return;}
+if(error||a[6]>100||!Number.isInteger(a[3])||!Number.isInteger(a[4])){invalidate('Enter valid non-negative numbers, whole-number sales volumes, and a fee between 0 and 100%.');return;}
 el('error').textContent='';
 const [p,q,c,oldN,newN,f,r,flat]=a;
 const oldUnit=p-c-p*r/100-flat, newUnit=q-c-q*r/100-flat;
 const before=oldUnit*oldN-f,after=newUnit*newN-f;
+if(![oldUnit,newUnit,before,after,after-before,newUnit*oldN-f].every(Number.isFinite)){invalidate('These values are too large to calculate. Enter smaller amounts or sales volumes.');return;}
 el('before').textContent=format(before);el('after').textContent=format(after);el('diff').textContent=format(after-before);
 const required=(before+f)/newUnit;
 el('needed').textContent=before<=-f?'0 units':newUnit>0&&Number.isFinite(required)&&required<=Number.MAX_SAFE_INTEGER?Math.ceil(Math.max(0,required)).toLocaleString('en-US')+' units':'Not achievable';
