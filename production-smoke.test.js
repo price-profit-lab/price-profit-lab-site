@@ -25,10 +25,13 @@ function fetchResource(url,binary=false){
   req.on('error',reject);
  });
 }
-function validImageResponse(res,expectedHash){
+function validAssetResponse(res,expectedHash){
  return res.status===200&&Buffer.isBuffer(res.body)&&
-  res.body.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))&&
   createHash('sha256').update(res.body).digest('hex')===expectedHash;
+}
+function validImageResponse(res,expectedHash){
+ return validAssetResponse(res,expectedHash)&&
+  res.body.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]));
 }
 function sitemapPaths(xml,expectedXml){
  if(!xml.includes('<urlset'))throw new Error('Missing XML sitemap urlset');
@@ -69,10 +72,10 @@ function validPurchaseLinks(html,expectedIds){
  }
  return expectedIds.every(id=>seen.has(id));
 }
-function validResponse(path,res,assets,expectedHeading){
+function validResponse(path,res,assets,expectedHeading,expectedAssetHash){
  if(res.status!==200)return false;
  if(path==='/robots.txt')return res.body.includes('Sitemap:');
- if(assets.includes(path))return res.body.length>100;
+ if(assets.includes(path))return validAssetResponse(res,expectedAssetHash);
  const html=res.body;
  if(!html.includes('<html')||!/<title>[^<]+<\/title>/.test(html))return false;
  const canonicalTag=html.match(/<link\b(?=[^>]*\brel=["']canonical["'])[^>]*>/i);
@@ -121,10 +124,10 @@ async function checkOnce(){
      expectedHeading=match[1];
     }
     const image=images.includes(path);
-    const res=await fetchResource(BASE+path,image);
-    const valid=image?
-     validImageResponse(res,createHash('sha256').update(fs.readFileSync(pathModule.join(__dirname,path.slice(1)))).digest('hex')):
-     validResponse(path,res,assets,expectedHeading);
+    const binary=image||assets.includes(path);
+    const res=await fetchResource(BASE+path,binary);
+    const expectedHash=binary?createHash('sha256').update(fs.readFileSync(pathModule.join(__dirname,path.slice(1)))).digest('hex'):undefined;
+    const valid=image?validImageResponse(res,expectedHash):validResponse(path,res,assets,expectedHeading,expectedHash);
     console.log((valid?'PASS':'FAIL')+' '+path+' HTTP '+res.status);
     if(!valid)errors.push(path);
    }catch(err){console.error('FAIL '+path+' '+err.message);errors.push(path);}
@@ -143,5 +146,5 @@ async function run(check=checkOnce,wait=ms=>new Promise(resolve=>setTimeout(reso
  return false;
 }
 if(require.main===module)run().then(ok=>{if(!ok)process.exitCode=1;}).catch(err=>{console.error(err);process.exitCode=1;});
-module.exports={sitemapPaths,validPurchaseLinks,validResponse,validImageResponse,run};
+module.exports={sitemapPaths,validPurchaseLinks,validResponse,validImageResponse,validAssetResponse,run};
 
