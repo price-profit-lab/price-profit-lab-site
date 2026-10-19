@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
     paths:
+      - 'cancellation-calculator.js'
+      - 'cancellation-calculator.test.js'
       - 'calculator.js'
       - 'calculator.test.js'
       - 'calculator.dom.test.js'
@@ -24,6 +26,8 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'cancellation-calculator.js'
+      - 'cancellation-calculator.test.js'
       - 'calculator.js'
       - 'calculator.test.js'
       - 'calculator.dom.test.js'
@@ -51,4 +55,4 @@ jobs:
         with:
           node-version: '22'
       - name: Test profit calculation and boundary cases
-        run: node calculator.test.js && node calculator.dom.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-events.test.js && node price-increase-calculator.test.js && node production-smoke.unit.test.js && node site-audit.test.js
+        run: node cancellation-calculator.test.js && node calculator.test.js && node calculator.dom.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-events.test.js && node price-increase-calculator.test.js && node production-smoke.unit.test.js && node site-audit.test.js

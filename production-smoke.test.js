@@ -74,7 +74,7 @@ async function checkOnce(){
  let paths;
  try{paths=sitemapPaths(sitemap.body,fs.readFileSync(pathModule.join(__dirname,'sitemap.xml'),'utf8'));console.log('PASS /sitemap.xml '+paths.length+' URLs');}
  catch(err){console.error('FAIL /sitemap.xml '+err.message);return false;}
- const assets=['/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/style.css'];
+ const assets=['/cancellation-calculator.js','/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/style.css'];
  const checks=[...paths,'/robots.txt',...assets];
  for(let offset=0;offset<checks.length;offset+=6){
   await Promise.all(checks.slice(offset,offset+6).map(async path=>{
