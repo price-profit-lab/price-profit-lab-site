@@ -110,3 +110,36 @@ for(const file of trackedPages){
  }
 }
 console.log('Production-only GA initialization and event guards passed for all tracked pages');
+
+const imageEvents=[];
+const imageListeners={};
+const imageLocation={pathname:'/service-excel'};
+vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),{
+ document:{addEventListener(type,fn){imageListeners[type]=fn}},
+ location:imageLocation,gtag:(...args)=>imageEvents.push(args)
+});
+function imageClick(href){
+ imageListeners.click({target:{closest(){return {getAttribute(name){return name==='href'?href:null}}}}});
+}
+imageClick('assets/service-standard-excel-mac.png');
+imageClick('./assets/service-pro-actions-excel-mac.png');
+assert.equal(imageEvents.length,2);
+assert.deepEqual(imageEvents.map(e=>e[1]),['standard_screenshot_click','pro_screenshot_click']);
+for(const event of imageEvents){
+ assert.equal(event[2].source_page,'/service-excel');
+ assert.deepEqual(Object.keys(event[2]),['source_page'],'Only the page path is sent');
+}
+for(const href of ['https://example.com/assets/service-standard-excel-mac.png','assets/other.png','assets/service-standard-excel-mac.png?email=private@example.com','assets/service-pro-actions-excel-mac.png#private','https://price-profit-lab.booth.pm/items/9011039']){
+ imageClick(href);
+}
+assert.equal(imageEvents.length,2,'Unrelated URLs and query-bearing paths are not screenshot events');
+imageLocation.pathname='/guides';
+imageClick('assets/service-standard-excel-mac.png');
+assert.equal(imageEvents.length,2,'Only the product page screenshot links are classified');
+imageLocation.pathname='/service-excel.html';
+imageClick('assets/service-pro-actions-excel-mac.png');
+assert.equal(imageEvents.length,3,'HTML alias is supported');
+const withoutGa={};
+vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),{document:{addEventListener(type,fn){withoutGa[type]=fn}},location:{pathname:'/service-excel'}});
+assert.doesNotThrow(()=>withoutGa.click({target:{closest(){return {getAttribute(){return 'assets/service-standard-excel-mac.png'}}}}}),'Navigation must not throw when analytics is unavailable');
+console.log('Product screenshot click classification and privacy checks passed');
