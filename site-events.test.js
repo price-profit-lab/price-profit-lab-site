@@ -124,11 +124,10 @@ function imageClick(href){
 imageClick('assets/service-standard-excel-mac.png');
 imageClick('./assets/service-pro-actions-excel-mac.png');
 assert.equal(imageEvents.length,2);
-assert.deepEqual(imageEvents.map(e=>e[1]),['product_screenshot_click','product_screenshot_click']);
-assert.deepEqual(imageEvents.map(e=>e[2].edition),['standard','pro']);
+assert.deepEqual(imageEvents.map(e=>e[1]),['standard_screenshot_click','pro_screenshot_click']);
 for(const event of imageEvents){
  assert.equal(event[2].source_page,'/service-excel');
- assert.deepEqual(Object.keys(event[2]),['source_page','edition'],'Only fixed labels and page path are sent');
+ assert.deepEqual(Object.keys(event[2]),['source_page'],'Only the page path is sent');
 }
 for(const href of ['https://example.com/assets/service-standard-excel-mac.png','assets/other.png','assets/service-standard-excel-mac.png?email=private@example.com','assets/service-pro-actions-excel-mac.png#private','https://price-profit-lab.booth.pm/items/9011039']){
  imageClick(href);

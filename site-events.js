@@ -18,7 +18,7 @@
   // Send fixed labels only; never send image URLs, query strings or form values.
   const screenshot=/^(?:\.\/)?assets\/(service-standard-excel-mac|service-pro-actions-excel-mac)\.png$/.exec(href);
   if((page==='/service-excel'||page==='/service-excel.html')&&screenshot){
-   gtag('event','product_screenshot_click',{source_page:page,edition:screenshot[1]==='service-standard-excel-mac'?'standard':'pro'});
+   gtag('event',screenshot[1]==='service-standard-excel-mac'?'standard_screenshot_click':'pro_screenshot_click',{source_page:page});
    return;
   }
   // Track free-tool navigation, including the homepage calculator anchor. No form values are sent.
