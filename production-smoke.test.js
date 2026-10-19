@@ -29,17 +29,25 @@ function sitemapPaths(xml){
   paths.add(parsed.pathname);
  }
  if(paths.size!==urls.length)throw new Error('Duplicate sitemap entries');
- for(const required of ['/','/product','/reverse-price-calculator','/price-increase-calculator']){
+ for(const required of ['/','/product','/reverse-price-calculator','/price-increase-calculator','/service-excel','/service-pricing-guide']){
   if(!paths.has(required))throw new Error('Required sitemap entry missing: '+required);
  }
  return [...paths];
 }
 function validResponse(path,res,assets){
- return res.status===200&&(path==='/robots.txt'?
-  res.body.includes('Sitemap:'):
-  assets.includes(path)?res.body.length>100:
-  res.body.includes('<html')&&res.body.includes('<title>')&&res.body.includes('</title>')&&
-  (path!=='/product'||res.body.includes('https://price-profit-lab.booth.pm/items/9001298')));
+ if(res.status!==200)return false;
+ if(path==='/robots.txt')return res.body.includes('Sitemap:');
+ if(assets.includes(path))return res.body.length>100;
+ const html=res.body;
+ if(!html.includes('<html')||!/<title>[^<]+<\/title>/.test(html))return false;
+ const requirements={
+  '/product':['https://price-profit-lab.booth.pm/items/9001298'],
+  '/':['href="service-excel.html"'],
+  '/service-excel':['https://price-profit-lab.booth.pm/items/9011039','https://price-profit-lab.booth.pm/items/9011528','1,480円','2,980円','href="service-pricing-guide.html"'],
+  '/service-pricing-guide':['<h1>サービス業の料金の決め方','165,600円','195,420円','href="service-excel.html"'],
+  '/guides':['href="service-pricing-guide.html"']
+ };
+ return (requirements[path]||[]).every(marker=>html.includes(marker));
 }
 async function run(){
  const errors=[];
