@@ -25,5 +25,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      # Push checks can start before Pages has finished publishing the same commit.
+      # Daily and manually requested checks run immediately; normal retries remain enabled.
+      - name: Allow Pages deployment propagation after a push
+        if: github.event_name == 'push'
+        run: sleep 60
       - name: Check live website and sitemap
         run: node production-smoke.test.js
