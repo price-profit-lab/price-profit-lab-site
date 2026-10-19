@@ -2,6 +2,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
+const {validPurchaseLinks}=require('./production-smoke.test.js');
 const files=fs.readdirSync('.').filter(f=>f.endsWith('.html'));
 const sitemap=fs.readFileSync('sitemap.xml','utf8');
 let linkCount=0;
@@ -71,6 +72,8 @@ const share=fs.readFileSync('share.html','utf8');
 assert.match(share,/サイト名・提供元の表記/,'Sharing page must explain brand-only attribution');
 assert.match(share,/「価格と利益の計算室」/,'Sharing page must name the public brand');
 const product=fs.readFileSync('product.html','utf8');
+assert.ok(validPurchaseLinks(product,['9001298']),'Product purchase anchors must lead to the merchandise item');
+assert.ok(validPurchaseLinks(fs.readFileSync('service-excel.html','utf8'),['9011039','9011528']),'Service purchase anchors must lead to Standard and Pro');
 assert.ok((product.match(/https:\/\/price-profit-lab\.booth\.pm\/items\/9001298/g)||[]).length>=3,'Product page should have multiple purchase links');
 assert.match(product,/購入前の3つの判断ポイント/,'Product page missing buyer qualification');
 assert.match(product,/Excel版を買わなくても/,'Product page missing free alternative disclosure');
@@ -78,3 +81,4 @@ for(const asset of ['calculator.js','reverse-price.js','price-increase-calculato
  assert.ok(fs.existsSync(asset),'Missing public asset '+asset);
 }
 console.log('Static site checks passed: '+files.length+' pages, '+linkCount+' local references');
+
