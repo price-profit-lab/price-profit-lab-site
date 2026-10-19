@@ -89,3 +89,24 @@ vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),{
 selfListeners.click({target:{closest(){return {getAttribute(){return 'cancellation-calculator.html'}}}}});
 assert.equal(selfEvents.length,0,'Do not count navigation to current calculator');
 console.log('Cancellation free-tool navigation and privacy checks passed');
+
+const trackedPages=fs.readdirSync('.').filter(path=>path.endsWith('.html'));
+for(const file of trackedPages){
+ const html=fs.readFileSync(file,'utf8');
+ const match=html.match(/<script>([^<]*gtag[^<]*)<\/script>/);
+ if(!match)continue;
+ for(const hostname of ['price-profit-lab.pages.dev','price-profit-lab-staging.pages.dev','build-id.price-profit-lab.pages.dev','price-profit-lab.pages.dev.example.com','localhost']){
+  const context={location:{hostname},dataLayer:[]};context.window=context;
+  vm.runInNewContext(match[1],context);
+  context.gtag('event','test_event');
+  if(hostname==='price-profit-lab.pages.dev'){
+   assert.equal(context.dataLayer.length,3,file+' should initialize production GA and queue event');
+   assert.equal(context.dataLayer[1][0],'config');
+   assert.equal(context.dataLayer[1][1],'G-V55WPDJV07');
+  }else{
+   assert.equal(context.dataLayer.length,0,file+' must not track preview/test traffic');
+   assert.equal(context['ga-disable-G-V55WPDJV07'],true);
+  }
+ }
+}
+console.log('Production-only GA initialization and event guards passed for all tracked pages');
