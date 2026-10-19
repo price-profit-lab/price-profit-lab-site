@@ -42,6 +42,23 @@ function sitemapPaths(xml,expectedXml){
  }
  return [...paths];
 }
+function validPurchaseLinks(html,expectedIds){
+ const seen=new Set();
+ // Check actual anchors, not URLs in prose, scripts, or commented-out buttons.
+ const markup=html.replace(/<!--[\s\S]*?-->/g,'').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
+ for(const anchor of markup.matchAll(/<a\b[^>]*>/gi)){
+  const tracked=/\sdata-ga4-booth-click\s*=\s*(["'])1\1/i.test(anchor[0]);
+  const match=anchor[0].match(/\shref\s*=\s*(["'])(.*?)\1/i);
+  if(!match){if(tracked)return false;continue;}
+  let url;
+  try{url=new URL(match[2],BASE);}catch{return false;}
+  if(!tracked&&(!url.hostname.endsWith('.booth.pm')||!url.pathname.startsWith('/items/')))continue;
+  const id=url.pathname.match(/^\/items\/(\d+)\/?$/);
+  if(url.protocol!=='https:'||url.host!=='price-profit-lab.booth.pm'||!id||!expectedIds.includes(id[1]))return false;
+  seen.add(id[1]);
+ }
+ return expectedIds.every(id=>seen.has(id));
+}
 function validResponse(path,res,assets,expectedHeading){
  if(res.status!==200)return false;
  if(path==='/robots.txt')return res.body.includes('Sitemap:');
@@ -62,6 +79,8 @@ function validResponse(path,res,assets,expectedHeading){
   '/service-pricing-guide':['<h1>サービス業の料金の決め方','165,600円','195,420円','href="service-excel.html"'],
   '/guides':['href="service-pricing-guide.html"']
  };
+ const expectedProducts={'/product':['9001298'],'/service-excel':['9011039','9011528']};
+ if(expectedProducts[path]&&!validPurchaseLinks(html,expectedProducts[path]))return false;
  return (requirements[path]||[]).every(marker=>html.includes(marker));
 }
 async function checkOnce(){
@@ -107,4 +126,5 @@ async function run(check=checkOnce,wait=ms=>new Promise(resolve=>setTimeout(reso
  return false;
 }
 if(require.main===module)run().then(ok=>{if(!ok)process.exitCode=1;}).catch(err=>{console.error(err);process.exitCode=1;});
-module.exports={sitemapPaths,validResponse,run};
+module.exports={sitemapPaths,validPurchaseLinks,validResponse,run};
+

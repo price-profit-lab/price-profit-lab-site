@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {sitemapPaths,validResponse,run}=require('./production-smoke.test.js');
+const {sitemapPaths,validPurchaseLinks,validResponse,run}=require('./production-smoke.test.js');
 const base='https://price-profit-lab.pages.dev';
 function page(path,body){return {status:200,body:'<link rel="canonical" href="'+base+path+'">'+body};}
 const urls=['/', '/product','/reverse-price-calculator','/price-increase-calculator','/service-excel','/service-pricing-guide',...Array.from({length:7},(_,i)=>'/guide-'+i)];
@@ -39,6 +39,28 @@ assert.throws(()=>sitemapPaths(xml.replace(base+'/service-excel',base+'/other-se
 assert.throws(()=>sitemapPaths(xml.replace(base+'/service-pricing-guide',base+'/other-guide')),/Required sitemap entry missing/);
 console.log('Service product and article availability checks passed');
 
+const shop='https://price-profit-lab.booth.pm/items/';
+const buy=(id)=>'<a href="'+shop+id+'">Purchase</a>';
+assert.equal(validPurchaseLinks(buy('9011039')+buy('9011528'),['9011039','9011528']),true);
+assert.equal(validPurchaseLinks("<a href='"+shop+"9011039?ref=guide#buy'>Standard</a>",['9011039']),true,'Allow tracking query and fragment');
+for(const html of [
+ '<p>'+shop+'9001298</p>',
+ '<a href="#">'+shop+'9001298</a>',
+ '<!-- '+buy('9001298')+' -->',
+ '<script>'+JSON.stringify(buy('9001298'))+'</script>',
+ buy('9001298').replace('https:','http:'),
+ buy('9001298').replace('price-profit-lab.booth.pm','other-shop.booth.pm'),
+ buy('9001298')+buy('9011039'),
+ buy('9001298')+'<a href="'+shop+'9001298extra">Wrong item path</a>'
+])assert.equal(validPurchaseLinks(html,['9001298']),false,'Reject invalid purchase markup: '+html);
+assert.equal(validPurchaseLinks(buy('9011039'),['9011039','9011528']),false,'Both service items are required');
+for(const attrs of ['href="#"','href="https://example.com/items/9001298"','','data-href="'+shop+'9001298"']){
+ assert.equal(validPurchaseLinks(buy('9001298')+'<a data-ga4-booth-click="1" '+attrs+'>Buy</a>',['9001298']),false,'Every tracked purchase button must have a valid destination');
+}
+const textOnly=service.replace(/href="https:\/\/price-profit-lab.booth.pm\/items\/\d+"/g,'href="#"')+'<p>'+shop+'9011039 '+shop+'9011528</p>';
+assert.equal(validResponse('/service-excel',page('/service-excel',textOnly),assets),false,'URLs left in text cannot replace live purchase links');
+console.log('Actual purchase anchors, product identity and commented-link regression checks passed');
+
 const currentXml=xml.replace('</urlset>','<url><loc>'+base+'/cancellation-profit-guide</loc></url></urlset>');
 assert.throws(()=>sitemapPaths(xml,currentXml),/Sitemap differs from repository/,'Old live sitemap must fail');
 assert.equal(sitemapPaths(currentXml,currentXml).length,urls.length+1);
@@ -60,3 +82,4 @@ console.log('Repository sitemap, generic fallback and stale heading checks passe
  assert.equal(attempts,3);assert.equal(waits,2);
  console.log('Deployment retry recovery and exhaustion checks passed');
 })().catch(err=>{console.error(err);process.exitCode=1;});
+
