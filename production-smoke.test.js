@@ -3,22 +3,32 @@
 const https=require('node:https');
 const fs=require('node:fs');
 const pathModule=require('node:path');
+const {createHash}=require('node:crypto');
 const BASE='https://price-profit-lab.pages.dev';
 const MAX_BYTES=1500000;
-function fetchText(url){
+function fetchResource(url,binary=false){
  return new Promise((resolve,reject)=>{
   const req=https.get(url,{timeout:15000,headers:{'User-Agent':'PriceProfitLab-UptimeCheck/1.1'}},res=>{
-   let body='';
-   res.setEncoding('utf8');
+   const chunks=[];
+   let bytes=0;
    res.on('data',chunk=>{
-    body+=chunk;
-    if(body.length>MAX_BYTES)req.destroy(new Error('Response too large'));
+    bytes+=chunk.length;
+    if(bytes>MAX_BYTES){req.destroy(new Error('Response too large'));return;}
+    chunks.push(chunk);
    });
-   res.on('end',()=>resolve({status:res.statusCode,body}));
+   res.on('end',()=>{
+    const body=Buffer.concat(chunks);
+    resolve({status:res.statusCode,body:binary?body:body.toString('utf8')});
+   });
   });
   req.on('timeout',()=>req.destroy(new Error('Timed out')));
   req.on('error',reject);
  });
+}
+function validImageResponse(res,expectedHash){
+ return res.status===200&&Buffer.isBuffer(res.body)&&
+  res.body.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))&&
+  createHash('sha256').update(res.body).digest('hex')===expectedHash;
 }
 function sitemapPaths(xml,expectedXml){
  if(!xml.includes('<urlset'))throw new Error('Missing XML sitemap urlset');
@@ -88,7 +98,7 @@ async function checkOnce(){
  const errors=[];
  let sitemap;
  try{
-  sitemap=await fetchText(BASE+'/sitemap.xml');
+  sitemap=await fetchResource(BASE+'/sitemap.xml');
   if(sitemap.status!==200)throw new Error('HTTP '+sitemap.status);
  }catch(err){console.error('FAIL /sitemap.xml '+err.message);return false;}
  let paths;
@@ -97,7 +107,8 @@ async function checkOnce(){
  const assets=['/cancellation-calculator.js','/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/style.css'];
  // Include the English calculator even though it is not in the Japanese sitemap.
  const pages=[...new Set([...paths,'/en/'])];
- const checks=[...pages,'/robots.txt',...assets];
+ const images=['/assets/service-standard-excel-mac.png','/assets/service-pro-actions-excel-mac.png'];
+ const checks=[...pages,'/robots.txt',...assets,...images];
  for(let offset=0;offset<checks.length;offset+=6){
   await Promise.all(checks.slice(offset,offset+6).map(async path=>{
    try{
@@ -109,8 +120,11 @@ async function checkOnce(){
      if(!match)throw new Error('Repository page missing h1');
      expectedHeading=match[1];
     }
-    const res=await fetchText(BASE+path);
-    const valid=validResponse(path,res,assets,expectedHeading);
+    const image=images.includes(path);
+    const res=await fetchResource(BASE+path,image);
+    const valid=image?
+     validImageResponse(res,createHash('sha256').update(fs.readFileSync(pathModule.join(__dirname,path.slice(1)))).digest('hex')):
+     validResponse(path,res,assets,expectedHeading);
     console.log((valid?'PASS':'FAIL')+' '+path+' HTTP '+res.status);
     if(!valid)errors.push(path);
    }catch(err){console.error('FAIL '+path+' '+err.message);errors.push(path);}
@@ -129,5 +143,5 @@ async function run(check=checkOnce,wait=ms=>new Promise(resolve=>setTimeout(reso
  return false;
 }
 if(require.main===module)run().then(ok=>{if(!ok)process.exitCode=1;}).catch(err=>{console.error(err);process.exitCode=1;});
-module.exports={sitemapPaths,validPurchaseLinks,validResponse,run};
+module.exports={sitemapPaths,validPurchaseLinks,validResponse,validImageResponse,run};
 

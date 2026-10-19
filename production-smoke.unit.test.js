@@ -1,6 +1,9 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {sitemapPaths,validPurchaseLinks,validResponse,run}=require('./production-smoke.test.js');
+const {sitemapPaths,validPurchaseLinks,validResponse,validImageResponse,run}=require('./production-smoke.test.js');
+const {createHash}=require('node:crypto');
+const fs=require('node:fs');
+const pathModule=require('node:path');
 const base='https://price-profit-lab.pages.dev';
 function page(path,body){return {status:200,body:'<link rel="canonical" href="'+base+path+'">'+body};}
 const urls=['/', '/product','/reverse-price-calculator','/price-increase-calculator','/service-excel','/service-pricing-guide',...Array.from({length:7},(_,i)=>'/guide-'+i)];
@@ -81,6 +84,19 @@ assert.equal(validResponse('/en/',page('/en/',english.replace('id="error"','id="
 assert.equal(validResponse('/en/',{status:404,body:english},assets,'Calculate profit'),false);
 assert.equal(validResponse('/en/',page('/en/',english),assets,'New heading'),false,'Stale English heading must fail');
 console.log('English calculator production identity and fallback checks passed');
+
+for(const filename of ['service-standard-excel-mac.png','service-pro-actions-excel-mac.png']){
+ const image=fs.readFileSync(pathModule.join(__dirname,'assets',filename));
+ const hash=createHash('sha256').update(image).digest('hex');
+ assert.equal(validImageResponse({status:200,body:image},hash),true,'Exact deployed screenshot must pass');
+ assert.equal(validImageResponse({status:404,body:image},hash),false,'Missing screenshot must fail');
+ assert.equal(validImageResponse({status:200,body:Buffer.from('<html>fallback</html>')},hash),false,'HTML fallback must fail');
+ assert.equal(validImageResponse({status:200,body:image.subarray(0,image.length-1)},hash),false,'Truncated screenshot must fail');
+ const altered=Buffer.from(image);altered[altered.length-1]^=1;
+ assert.equal(validImageResponse({status:200,body:altered},hash),false,'Changed screenshot must fail');
+ assert.equal(validImageResponse({status:200,body:image},'0'.repeat(64)),false,'Wrong expected screenshot must fail');
+}
+console.log('Exact PNG screenshot integrity and fallback checks passed');
 
 (async()=>{
  let attempts=0,waits=0;
