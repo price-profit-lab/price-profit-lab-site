@@ -5,7 +5,7 @@ on:
     paths:
       - 'production-smoke.test.js'
       - 'production-smoke.unit.test.js'
-      - '*.html'
+      - '**/*.html'
       - '.github/workflows/production-monitor.yml'
       - 'sitemap.xml'
   schedule:
