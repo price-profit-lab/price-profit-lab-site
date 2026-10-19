@@ -1,0 +1,36 @@
+name: Calculator quality checks
+
+on:
+  pull_request:
+    paths:
+      - 'calculator.js'
+      - 'test-calculator*.js'
+      - '.github/workflows/price-profit-quality.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'calculator.js'
+      - 'test-calculator*.js'
+      - '.github/workflows/price-profit-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calculator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate calculator syntax
+        run: node --check calculator.js
+      - name: Verify profit calculation
+        run: node test-calculator.js
+      - name: Verify scenario rounding and input behavior
+        run: node test-calculator-ui.js
