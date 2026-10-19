@@ -50,3 +50,19 @@ for(const e of events.slice(7)){
  assert.deepEqual(Object.keys(e[2]),['source_page','tool']);
 }
 console.log('Product and all free-tool navigation analytics tests passed');
+
+const beforeService=events.length;
+for(const href of ['service-excel.html','service-excel.html#compare','service-excel','service-excel?ref=guide','./service-excel.html']){
+ click(href);
+}
+assert.equal(events.length,beforeService+5,'Service comparison navigation should be counted once');
+for(const event of events.slice(beforeService)){
+ assert.equal(event[1],'service_product_detail_click');
+ assert.equal(event[2].source_page,'/shipping-profit-guide');
+ assert.deepEqual(Object.keys(event[2]),['source_page'],'Do not send form values or URL query parameters');
+}
+for(const href of ['https://example.com/service-excel.html','service-excel-copy.html','https://price-profit-lab.booth.pm/items/9011039','https://price-profit-lab.booth.pm/items/9011528']){
+ click(href);
+}
+assert.equal(events.length,beforeService+5,'Unrelated and separately tracked purchase links must not be counted as comparison navigation');
+console.log('Service comparison navigation analytics tests passed');
