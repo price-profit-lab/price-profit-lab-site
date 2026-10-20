@@ -142,6 +142,7 @@ def verify_product_pages(browser, base):
                 assert image_scroller.evaluate("el=>el===document.activeElement"), "Screenshot scroll area must be keyboard focusable"
                 if width == 375:
                     assert image_scroller.evaluate("el=>el.scrollWidth>el.clientWidth"), "Wide screenshot should scroll on mobile"
+                    image_scroller.evaluate("el=>{el.scrollLeft=0}")
                     image_scroller.press("ArrowRight")
                     # Wait for the browser's keyboard scrolling, without network access.
                     page.wait_for_function("document.activeElement.scrollLeft>0")
