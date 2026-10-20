@@ -143,3 +143,45 @@ const withoutGa={};
 vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),{document:{addEventListener(type,fn){withoutGa[type]=fn}},location:{pathname:'/service-excel'}});
 assert.doesNotThrow(()=>withoutGa.click({target:{closest(){return {getAttribute(){return 'assets/service-standard-excel-mac.png'}}}}}),'Navigation must not throw when analytics is unavailable');
 console.log('Product screenshot click classification and privacy checks passed');
+
+const helpEvents=[];
+const helpListeners={};
+const helpLocation={pathname:'/product'};
+vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),{
+ document:{addEventListener(type,fn){helpListeners[type]=fn}},
+ location:helpLocation,gtag:(...args)=>helpEvents.push(args)
+});
+function helpClick(href){
+ helpListeners.click({target:{closest(){return {getAttribute(name){return name==='href'?href:null}}}}});
+}
+for(const [href,guide] of [
+ ['product-help.html','product-help'],
+ ['product-help','product-help'],
+ ['./product-help.html#start','product-help'],
+ ['service-excel-help.html','service-excel-help'],
+ ['service-excel-help','service-excel-help'],
+ ['./service-excel-help.html?email=private@example.com#start','service-excel-help']
+]){
+ const count=helpEvents.length;
+ helpClick(href);
+ assert.equal(helpEvents.length,count+1,'One event per supported guide navigation');
+ const event=helpEvents.at(-1);
+ assert.equal(event[0],'event');
+ assert.equal(event[1],guide==='product-help'?'product_help_click':'service_excel_help_click');
+ assert.equal(event[2].source_page,'/product');
+ assert.deepEqual(Object.keys(event[2]),['source_page'],'Only source path is sent; guide type uses fixed event names');
+ assert.ok(!JSON.stringify(event).includes('private@example.com'),'Never send query values');
+}
+const helpCount=helpEvents.length;
+for(const href of ['https://example.com/product-help.html','//example.com/service-excel-help','product-help-copy.html','assets/product-help.html','product-help.html/extra','javascript:product-help','mailto:service-excel-help'])helpClick(href);
+assert.equal(helpEvents.length,helpCount,'External and lookalike paths are ignored');
+for(const guide of ['product-help','service-excel-help']){
+ for(const suffix of ['','.html']){
+  helpLocation.pathname='/'+guide+suffix;
+  helpClick(guide+'.html#trouble');
+ }
+}
+assert.equal(helpEvents.length,helpCount,'Do not count navigation within the current help page');
+assert.doesNotThrow(()=>withoutGa.click({target:{closest(){return {getAttribute(){return 'product-help.html'}}}}}),'Guide links work when analytics is unavailable');
+console.log('Excel guide navigation, self-link exclusion and payload privacy checks passed');
+
