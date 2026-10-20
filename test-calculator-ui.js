@@ -7,7 +7,7 @@ const path = require('node:path');
 function page(overrides={}) {
  const defaults={oldPrice:3000,newPrice:3300,unitCost:900,oldCount:100,newCount:90,fixedCost:80000,rate:0,flatFee:0,target:150000,hours:100,...overrides};
  const elements={};
- const element=()=>({textContent:'',hidden:false,className:'',children:[],listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},replaceChildren(){this.children=[];},append(child){this.children.push(child);}});
+ const element=()=>({textContent:'',hidden:false,className:'',children:[],listeners:{},attributes:{},setAttribute(name,value){this.attributes[name]=value;},addEventListener(type,fn){this.listeners[type]=fn;},replaceChildren(){this.children=[];},append(child){this.children.push(child);}});
  for(const [id,value] of Object.entries(defaults))elements[id]={...element(),value:String(value),defaultValue:String(value)};
  for(const id of ['error','results','before','after','diff','hourly','needed','breakeven','goal','scenarios','resetSample'])elements[id]=element();
  const document={getElementById:id=>elements[id],createElement:()=>element()};
@@ -30,3 +30,4 @@ check('blank price hides results',()=>{const {elements:e}=page();e.oldPrice.valu
 check('reset restores sample',()=>{const {elements:e}=page();e.newPrice.value='9999';e.newPrice.listeners.input();e.resetSample.listeners.click();assert.equal(e.newPrice.value,'3300');assert.equal(e.after.textContent,'136,000円');});
 check('zero hours is unavailable',()=>{const {elements:e}=page({hours:0});assert.equal(e.hourly.textContent,'算出不可');});
 console.log('UI regression tests passed:',checks);
+
