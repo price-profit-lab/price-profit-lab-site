@@ -28,6 +28,7 @@ function initCancellationCalculator(doc){
  const error=doc.getElementById('cancellationError');
  const result=doc.getElementById('cancellationResult');
  const warning=doc.getElementById('cancellationWarning');
+ const scenarios=doc.getElementById('cancellationScenarios');
  const money=n=>(Object.is(n,-0)?0:n).toLocaleString('ja-JP',{maximumFractionDigits:2})+'円';
  const count=n=>n.toLocaleString('ja-JP',{maximumFractionDigits:2})+'件';
  let tracked=false;
@@ -53,6 +54,18 @@ function initCancellationCalculator(doc){
   doc.getElementById('cancel-result-profitChange').className=r.profitChange<0?'bad':r.profitChange>0?'good':'';
   warning.hidden=r.margin>0;
   warning.textContent=r.margin<0?'1件あたりの残額がマイナスです。この条件では実施するほど赤字が増えるため、キャンセル後の参考利益が高く表示されます。料金や費用の入力を見直してください。':r.margin===0?'1件あたりの残額が0円のため、件数が変わっても参考利益は変わりません。':'';
+  scenarios.replaceChildren();
+  const rates=[...new Set([0,5,10,20,values.cancellation])].sort((a,b)=>a-b);
+  for(const rate of rates){
+   const scenario=calculateCancellation({...values,cancellation:rate});
+   const row=doc.createElement('tr');
+   const rateCell=doc.createElement('th');rateCell.setAttribute('scope','row');
+   rateCell.textContent=String(rate)+'％'+(rate===values.cancellation?'（入力中）':'');row.append(rateCell);
+   for(const text of [count(scenario.completed),money(scenario.profit),(scenario.profitChange>0?'+':'')+money(scenario.profitChange)]){
+    const cell=doc.createElement('td');cell.textContent=text;row.append(cell);
+   }
+   scenarios.append(row);
+  }
   return true;
  }
  for(const input of Object.values(inputs))input.addEventListener('input',()=>{
@@ -66,3 +79,4 @@ function initCancellationCalculator(doc){
 }
 if(typeof document!=='undefined')initCancellationCalculator(document);
 if(typeof module!=='undefined')module.exports={calculateCancellation,initCancellationCalculator};
+
