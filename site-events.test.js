@@ -185,3 +185,34 @@ assert.equal(helpEvents.length,helpCount,'Do not count navigation within the cur
 assert.doesNotThrow(()=>withoutGa.click({target:{closest(){return {getAttribute(){return 'product-help.html'}}}}}),'Guide links work when analytics is unavailable');
 console.log('Excel guide navigation, self-link exclusion and payload privacy checks passed');
 
+// Exercise the real inline purchase handlers without navigating or loading GA.
+for(const [file,item,eventName] of [
+ ['index.html','9001298','booth_product_click'],
+ ['product.html','9001298','booth_product_click'],
+ ['service-excel.html','9011039','booth_standard_click'],
+ ['service-excel.html','9011528','booth_pro_click']
+]){
+ const target='https://price-profit-lab.booth.pm/items/'+item;
+ const anchors=[...fs.readFileSync(file,'utf8').matchAll(/<a\b[^>]*>/g)]
+  .map(m=>m[0]).filter(tag=>tag.includes('href="'+target+'"')&&tag.includes('data-ga4-booth-click="1"'));
+ assert.ok(anchors.length>0,file+' needs the tracked purchase link');
+ for(const tag of anchors){
+  const handler=tag.match(/onclick="([^"]+)"/)[1]
+   .replace(/&#(?:x([0-9a-f]+)|([0-9]+));/gi,(_,hex,decimal)=>String.fromCodePoint(parseInt(hex||decimal,hex?16:10)))
+   .replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+  const calls=[];
+  vm.runInNewContext('(function(){'+handler+'}).call(anchor)',{
+   anchor:{href:target},gtag:(...args)=>calls.push(args)
+  });
+  assert.equal(calls.length,1,'Exactly one event for a purchase-link click');
+  assert.equal(calls[0][0],'event');
+  assert.equal(calls[0][1],eventName,'Standard and Pro need distinct event names');
+  assert.equal(calls[0][2].product_id,item);
+  assert.equal(calls[0][2].link_url,target);
+  assert.equal(calls[0][2].transport_type,'beacon');
+  assert.deepEqual(Object.keys(calls[0][2]),['product_id','link_url','transport_type']);
+  assert.doesNotThrow(()=>vm.runInNewContext('(function(){'+handler+'}).call(anchor)',{anchor:{href:target}}),'Purchase link must work without GA');
+ }
+}
+console.log('Single purchase-click events and Standard/Pro separation passed');
+
