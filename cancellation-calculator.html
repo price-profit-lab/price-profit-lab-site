@@ -18,7 +18,7 @@
 <div id="cancellationResult" aria-live="polite" aria-atomic="true">
 <div class="metrics"><div class="metric"><span>キャンセルなしの月間参考利益</span><strong id="cancel-result-baseline">—</strong></div><div class="metric"><span>キャンセル後の月間参考利益</span><strong id="cancel-result-profit">—</strong></div><div class="metric"><span>参考利益の差額（後−なし）</span><strong id="cancel-result-profitChange">—</strong></div><div class="metric"><span>売上の減少額</span><strong id="cancel-result-lostSales">—</strong></div></div>
 <p>実施件数の期待値：<strong id="cancel-result-completed">—</strong> ／ キャンセル件数の期待値：<strong id="cancel-result-cancelled">—</strong></p><p>実施1件あたりの残額：<strong id="cancel-result-margin">—</strong></p>
-<p id="cancellationWarning" class="error" hidden></p></div>
+<p id="cancellationWarning" class="error" hidden></p><h3>キャンセル率を変えた場合を比較</h3><p>入力した料金・費用・予約件数を固定し、0％・5％・10％・20％と入力中の率を並べます。改善効果の予測ではなく、仮定を変えた比較です。対策の実施費用や、それに伴う予約件数の変化は含みません。</p><div class="tablewrap"><table><caption>同じ条件でキャンセル率だけを変更した月間の比較</caption><thead><tr><th scope="col">キャンセル率</th><th scope="col">実施件数の期待値</th><th scope="col">月間参考利益</th><th scope="col">キャンセルなしとの差額</th></tr></thead><tbody id="cancellationScenarios"></tbody></table></div></div>
 <p class="note">金額・件数は小数第2位まで表示します。実施件数は期待値のため、小数になる場合があります。参考利益は入力した費用だけを控除した値で、現金収支や税引後所得とは異なります。</p>
 <noscript><p class="error">計算にはJavaScriptを有効にしてください。計算方法は下の解説でも確認できます。</p></noscript></section>
 <section class="panel"><h2>この計算の前提</h2><ul><li>キャンセルされた予約には、1件ごとの費用と手数料が発生しないものとします。</li><li>空き枠への追加予約、キャンセル料、準備済み材料などの回収できない費用は含めません。</li><li>予約件数はキャンセルを差し引く前の件数です。同じキャンセルを二重に差し引かないでください。</li><li>時間の評価額を含める場合は「実施1件あたりの費用」に加算します。固定費などに入れた費用を重複して含めないようにしてください。</li></ul><p><a href="cancellation-profit-guide.html">空いた枠が埋まった場合や、準備費用がかかった場合の考え方</a>は、キャンセルの利益への影響を解説した記事をご覧ください。</p>

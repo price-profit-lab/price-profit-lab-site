@@ -24,15 +24,28 @@ for(const [field,values] of Object.entries({
 const upper=calculateCancellation({price:1e9,cost:1e9,fee:100,fixed:1e12,bookings:1e6,cancellation:100});
 for(const n of Object.values(upper))assert.ok(Number.isFinite(n),'Upper bounds must stay finite');
 function element(value=''){
- return {value,defaultValue:value,textContent:'',className:'',hidden:false,attrs:{},events:{},
+ return {value,defaultValue:value,textContent:'',className:'',hidden:false,attrs:{},events:{},children:[],
+ append(child){this.children.push(child);},replaceChildren(...children){this.children=children;},
  setAttribute(k,v){this.attrs[k]=v;},addEventListener(k,fn){this.events[k]=fn;}};
 }
 const nodes={};
 for(const [key,value] of Object.entries(sample))nodes['cancel-'+key]=element(String(value));
-for(const key of ['cancellationForm','cancellationError','cancellationResult','cancellationWarning','cancellationReset',...['baseline','profit','profitChange','lostSales','margin','completed','cancelled'].map(k=>'cancel-result-'+k)])nodes[key]=element();
-initCancellationCalculator({getElementById:key=>nodes[key]});
+for(const key of ['cancellationForm','cancellationError','cancellationResult','cancellationWarning','cancellationReset','cancellationScenarios',...['baseline','profit','profitChange','lostSales','margin','completed','cancelled'].map(k=>'cancel-result-'+k)])nodes[key]=element();
+initCancellationCalculator({getElementById:key=>nodes[key],createElement:()=>element()});
 assert.equal(nodes['cancel-result-profit'].textContent,'181,840円');
 assert.equal(nodes.cancellationResult.hidden,false);
+const rows=()=>nodes.cancellationScenarios.children.map(row=>row.children.map(cell=>cell.textContent));
+assert.deepEqual(rows(),[
+ ['0％','80件','207,600円','0円'],['5％','76件','194,720円','-12,880円'],
+ ['10％（入力中）','72件','181,840円','-25,760円'],['20％','64件','156,080円','-51,520円']
+]);
+assert.equal(nodes.cancellationScenarios.children[0].children[0].attrs.scope,'row');
+nodes['cancel-cancellation'].value='7.5';nodes['cancel-cancellation'].events.input();
+assert.equal(rows().length,5);
+assert.deepEqual(rows()[2],['7.5％（入力中）','74件','188,280円','-19,320円']);
+nodes['cancel-bookings'].value='0';nodes['cancel-bookings'].events.input();
+for(const row of rows())assert.deepEqual(row.slice(1),['0件','-50,000円','0円']);
+nodes.cancellationReset.events.click();
 nodes['cancel-price'].value='';nodes['cancel-price'].events.input();
 assert.equal(nodes.cancellationResult.hidden,true);
 assert.match(nodes.cancellationError.textContent,/1件の料金/);
@@ -42,6 +55,7 @@ assert.equal(nodes.cancellationResult.hidden,false);
 assert.equal(nodes.cancellationWarning.hidden,false);
 assert.equal(nodes['cancel-price'].attrs['aria-invalid'],'false');
 assert.ok(nodes['cancel-result-profitChange'].textContent.startsWith('+'));
+assert.equal(rows()[2][3],'+13,040円');
 nodes['cancel-cancellation'].value='101';nodes['cancel-cancellation'].events.input();
 assert.equal(nodes.cancellationResult.hidden,true);
 nodes.cancellationReset.events.click();
@@ -49,4 +63,8 @@ assert.equal(nodes.cancellationResult.hidden,false);
 assert.equal(nodes.cancellationWarning.hidden,true);
 assert.equal(nodes['cancel-price'].value,'6000');
 assert.equal(nodes['cancel-result-profit'].textContent,'181,840円');
-console.log('Cancellation model, boundaries, invalid input, warning and reset checks passed');
+assert.equal(rows().length,4,'Reset removes the custom scenario and deduplicates the sample rate');
+nodes['cancel-cancellation'].value='100';nodes['cancel-cancellation'].events.input();
+assert.deepEqual(rows().at(-1),['100％（入力中）','0件','-50,000円','-257,600円']);
+console.log('Cancellation model, boundaries, invalid input, scenarios, warning and reset checks passed');
+
