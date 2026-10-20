@@ -57,6 +57,7 @@ def verify_case(browser, base, case):
     assert page.evaluate("window.printCalls") == 1, "Print button must invoke the handler exactly once"
     page.set_viewport_size({"width": 794, "height": 1123})
     page.emulate_media(media="print")
+    assert page.evaluate("getComputedStyle(document.documentElement).backgroundColor") == "rgb(255, 255, 255)"
     expect(page.locator("header")).to_be_hidden()
     expect(page.locator("footer")).to_be_hidden()
     expect(page.locator(".print-only")).to_be_visible()
@@ -81,6 +82,9 @@ def verify_case(browser, base, case):
     assert "price-profit-lab.pages.dev" in normalized, (case["name"], "source URL missing", text)
     assert "BOOTH" not in text, "Promotional content leaked into print output"
     assert "入力条件と結果を印刷" not in normalized
+    if case["name"] == "cancellation":
+        for pdf_page in reader.pages[:-1]:
+            assert not re.sub(r"\s", "", pdf_page.extract_text() or "").endswith("この計算の前提"), "An assumptions heading must stay with its content"
     # The print rules must never expose a stale result after invalid input.
     page.locator(case["invalid"]).fill("")
     expect(page.locator(case["result"])).to_be_hidden()

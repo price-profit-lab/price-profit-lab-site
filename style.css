@@ -24,6 +24,7 @@ a.secondary-button{display:inline-block;text-decoration:none}
 
 .print-only{display:none}
 @media print{
+ html:has(>body.calculator-print-page){background:#fff}
  .calculator-print-page{color:#000;background:#fff;font-size:10pt;line-height:1.5}
  .calculator-print-page>header,.calculator-print-page>footer,.calculator-print-page main>:not(.print-include),.calculator-print-page .print-actions,.calculator-print-page .print-omit,.calculator-print-page button{display:none!important}
  .calculator-print-page [hidden]{display:none!important}
@@ -32,6 +33,7 @@ a.secondary-button{display:inline-block;text-decoration:none}
  .calculator-print-page .panel{border:0;border-radius:0;box-shadow:none;padding:0;margin:0 0 14pt}
  .calculator-print-page .print-title{font-size:18pt;font-weight:700;line-height:1.3;margin:0 0 8pt}
  .calculator-print-page h2{font-size:14pt}.calculator-print-page h3{font-size:11pt}
+ .calculator-print-page h2,.calculator-print-page h3{break-after:avoid-page}
  .calculator-print-page .grid,.calculator-print-page .metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:6pt}
  .calculator-print-page .field{font-size:10pt;break-inside:avoid}
  .calculator-print-page input{font-size:11pt;padding:4pt;margin-top:2pt;border:1px solid #777;border-radius:0;color:#000}
