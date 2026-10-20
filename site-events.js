@@ -6,6 +6,14 @@
   if(!anchor||typeof gtag!=='function')return;
   const href=anchor.getAttribute('href')||'';
   const page=typeof location!=='undefined'?location.pathname:'unknown';
+  // Classify only the two known local help pages. Never send href/query/form data.
+  const help=/^(?:\.\/)?(product-help|service-excel-help)(?:\.html)?(?:[#?].*)?$/.exec(href);
+  if(help){
+   if(page!=='/'+help[1]&&page!=='/'+help[1]+'.html'){
+    gtag('event','excel_help_click',{source_page:page,guide:help[1]});
+   }
+   return;
+  }
   if(/^product(?:\.html)?(?:[#?].*)?$/.test(href)){
    gtag('event','product_detail_click',{source_page:page});
    return;
@@ -32,3 +40,4 @@
   }
  });
 })();
+
