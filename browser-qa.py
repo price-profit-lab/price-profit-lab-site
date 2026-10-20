@@ -134,7 +134,9 @@ def verify_product_pages(browser, base):
             if product == "service-excel":
                 expect(page.locator(".workbook-screenshots img")).to_have_count(2)
                 for img in page.locator(".workbook-screenshots img").all():
-                    assert img.evaluate("el=>el.complete&&el.naturalWidth>0"), "Product screenshot failed to load"
+                    # These images load lazily when the user scrolls to them.
+                    img.scroll_into_view_if_needed()
+                    page.wait_for_function("img=>img.complete&&img.naturalWidth>0", arg=img.element_handle())
                 image_scroller = page.locator(".workbook-image-scroll").last
                 image_scroller.focus()
                 assert image_scroller.evaluate("el=>el===document.activeElement"), "Screenshot scroll area must be keyboard focusable"
