@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>10％値引きで利益を保つには何個必要？クーポン・セールの利益計算</title>
+<meta name="description" content="10％値引きして売上が増えても利益は減る？販売手数料と原価を含め、同じ利益を保つ販売数を計算。全品値引きと一部クーポンの違い、無料ツールの入力例を解説します。">
+<link rel="canonical" href="https://price-profit-lab.pages.dev/discount-profit-guide"><link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V55WPDJV07"></script><script>window.dataLayer=window.dataLayer||[];if(location.hostname!=="price-profit-lab.pages.dev")window["ga-disable-G-V55WPDJV07"]=true;function gtag(){if(location.hostname==="price-profit-lab.pages.dev")dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-V55WPDJV07");</script>
+<meta property="og:type" content="article"><meta property="og:locale" content="ja_JP"><meta property="og:site_name" content="価格と利益の計算室"><meta property="og:title" content="10％値引きで利益を保つには何個必要？"><meta property="og:description" content="原価と手数料を含めて、値引き後の利益維持に必要な販売数を計算。クーポンの対象と追加費用も分けて考えます。"><meta property="og:url" content="https://price-profit-lab.pages.dev/discount-profit-guide"><meta name="twitter:card" content="summary"></head>
+<body><header><a href="index.html"><b>価格と利益の計算室</b></a><nav><a href="index.html#calculator">無料利益計算</a><a href="guides.html">解説記事</a><a href="product.html">Excel版</a></nav></header>
+<main><article class="panel"><h1>10％値引きしたら、何個多く売れば利益を保てる？</h1>
+<p>セールで売れる数が増えても、値引き前より利益が減る場合があります。10％値引きした分を「販売数10％増」で取り戻せるとは限りません。材料費や梱包費は、価格を下げても同じだけかかるためです。</p>
+<p>この記事では、<strong>値引き後も現在と同じ利益を残すために必要な販売数</strong>を、架空のネット販売の例で計算します。値引きで何個売れるかを予測する記事ではありません。</p>
+<nav class="product-toc" aria-label="この記事の目次"><strong>確認したい内容へ</strong><a href="#example">10％値引きの例</a><a href="#rates">値引き率別の比較</a><a href="#coupon">一部だけクーポンを使う場合</a><a href="#tool">無料ツールの入力例</a></nav>
+<h2>まずは「1個売れたときに残る金額」を確認する</h2>
+<p>固定費を引く前に、販売価格から1個ごとの原価・販売手数料を引いた金額を計算します。ここでは、この金額を1個あたりの限界利益と呼びます。</p>
+<div class="metric"><strong>1個あたりの限界利益＝販売価格×（1−手数料率）−1個あたり変動費−定額手数料</strong></div>
+<p>式に入れる手数料率5％は0.05です。月間利益は「1個あたりの限界利益×月間販売数−月間固定費」で求めます。税金、自分の時間の評価額など、費用に含めていない項目は差し引かれません。</p>
+<h2 id="example">例：3,000円の商品を10％値引きする</h2>
+<p>1注文1商品、手数料は値引き後の商品代金の5％＋1注文40円と仮定します。これは特定の販売サイトの料金体系ではありません。送料の別徴収はなく、発送費は変動費に含めた条件です。</p>
+<div class="tablewrap"><table><caption>同じ月間・同じ税込／税抜基準でそろえた仮の条件</caption><thead><tr><th scope="col">項目</th><th scope="col">値引き前</th><th scope="col">10％値引き後</th></tr></thead><tbody>
+<tr><th scope="row">販売価格</th><td>3,000円</td><td>2,700円</td></tr><tr><th scope="row">材料・梱包・発送等の変動費</th><td>1,500円／個</td><td>1,500円／個</td></tr><tr><th scope="row">販売手数料</th><td>190円／個</td><td>175円／個</td></tr><tr><th scope="row">1個あたりの限界利益</th><td>1,310円</td><td>1,025円</td></tr><tr><th scope="row">月間固定費</th><td>30,000円</td><td>30,000円</td></tr><tr><th scope="row">月100個なら月間利益</th><td>101,000円</td><td>72,500円</td></tr>
+</tbody></table></div>
+<p>価格は300円下がり、手数料は15円減るため、1個あたりの限界利益は<strong>285円減少</strong>します。100個のままなら、月間利益は28,500円減ります。</p>
+<h3>売上が増えても、利益が戻るとは限らない</h3>
+<p>値引き後に112個売れると、売上は2,700×112＝<strong>302,400円</strong>。元の300,000円を上回ります。しかし利益は1,025×112−30,000＝<strong>84,800円</strong>で、元の101,000円より16,200円少ない計算です。</p>
+<h3>同じ利益を保つには128個必要</h3>
+<div class="metric"><strong>必要販売数＝（維持したい利益＋値引き後の固定費）÷値引き後の1個あたり限界利益</strong></div>
+<p>この例では（101,000＋30,000）÷1,025＝約127.80個です。商品を整数で売るなら切り上げ、<strong>月128個、現在より28個増</strong>が必要です。127個の利益は100,175円で届かず、128個なら101,200円になります。</p>
+<p>固定費が同じで、費用や手数料の条件も変わらない場合は「現在の販売数×値引き前の限界利益÷値引き後の限界利益」でも求められます。値引き後の限界利益が0以下で、固定費控除後のプラス利益を目指す場合、販売数を増やしても届きません。</p>
+<h2 id="rates">値引き率を変えた場合の必要販売数</h2>
+<p>変動費1,500円、手数料5％＋40円、固定費30,000円を据え置き、元の利益101,000円を保つ条件で比較します。件数の増加は必要条件であり、実際に売れる見込みではありません。</p>
+<div class="tablewrap"><table><thead><tr><th scope="col">値引き率</th><th scope="col">販売価格</th><th scope="col">1個あたり限界利益</th><th scope="col">利益維持に必要な個数</th><th scope="col">元の100個との差</th></tr></thead><tbody>
+<tr><td>0％</td><td>3,000円</td><td>1,310円</td><td>100個</td><td>0個</td></tr><tr><td>5％</td><td>2,850円</td><td>1,167.5円</td><td>113個</td><td>＋13個</td></tr><tr><td>10％</td><td>2,700円</td><td>1,025円</td><td>128個</td><td>＋28個</td></tr><tr><td>20％</td><td>2,400円</td><td>740円</td><td>178個</td><td>＋78個</td></tr>
+</tbody></table></div>
+<p>表は手数料の円未満処理を行わない概算です。実際には販売サイトの端数処理や決済対象額を確認してください。販売数が増えると作業時間や発送件数も増えるため、必要数を受けられるかも合わせて考えます。</p>
+<h2 id="coupon">20個だけにクーポンを使う場合は、全品値引きと分ける</h2>
+<p>100個のうち80個を通常価格、20個を10％引きで販売したとします。同じ費用条件なら、月間利益は1,310×80＋1,025×20−30,000＝<strong>95,300円</strong>です。全100個を通常価格で売る場合より5,700円少なくなります。</p>
+<p>その5,700円を追加の値引き販売だけで埋めるなら、5,700÷1,025を切り上げた<strong>6個の追加販売</strong>が必要です。通常価格80個と値引き26個で、利益は101,450円になります。ただしこれは通常価格の80個が維持され、新たに6個売れ、追加費用が生じない仮定です。</p>
+<p>クーポンを使った人が、クーポンなしでも買う予定だったのか、新規に購入したのかで判断は変わります。利用枚数だけを見て「その分の売上が純増した」とは扱えません。販売サイトが負担する割引の場合も、自分に入る売上と手数料を実際の明細で確認します。</p>
+<h2>広告費などが増えるなら、利益維持ラインも変わる</h2>
+<p>全品10％引きの例で、月5,000円の追加広告費がかかるなら、値引き後の固定費は35,000円です。同じ101,000円の利益に必要なのは（101,000＋35,000）÷1,025を切り上げた<strong>133個</strong>になります。元の128個のままでは届きません。</p>
+<p>追加の梱包費・送料などが1個ごとに増える場合は変動費へ、広告出稿料など月ごとに発生する費用は、その月の条件に合わせて整理します。売上に連動する広告費などは、その実態に合わせて分けてください。クーポン額を値引き後の売上にも費用にも入れる二重控除には注意が必要です。</p>
+<h2 id="tool">無料ツールで全品10％値引きの例を試す</h2>
+<p><a href="index.html#calculator">無料の値上げ・利益シミュレーター</a>は、変更後の単価を現在より低くして値引きの試算にも使えます。基本例を確認する入力は次のとおりです。</p>
+<div class="tablewrap"><table><thead><tr><th scope="col">入力欄</th><th scope="col">入力値</th></tr></thead><tbody><tr><td>現在／変更後の単価</td><td>3,000円／2,700円</td></tr><tr><td>1件あたり変動費</td><td>1,500円（手数料を除く）</td></tr><tr><td>現在／変更後の月間販売数</td><td>100件／128件</td></tr><tr><td>月間固定費</td><td>30,000円</td></tr><tr><td>販売手数料率／定額手数料</td><td>5％／40円</td></tr><tr><td>目標月間利益</td><td>101,000円</td></tr><tr><td>月間作業時間</td><td>0（時間あたり利益は算出不可）</td></tr></tbody></table></div>
+<p>現在の利益101,000円、変更後101,200円、利益維持に必要な販売数128件を確認できます。下部の販売数減少表では販売増を一覧にしないため、<strong>増える件数は入力欄を直接変更</strong>して確かめてください。</p>
+<p>無料ツールは変更前後で共通の変動費・固定費を使います。一部だけクーポンを適用する混在販売や、値引き後だけ広告費が増える条件を、そのまま一度に比較する機能はありません。上の式で分けて計算してください。</p>
+<p><a class="button" href="index.html#calculator">自分の値引き案で利益を無料比較する</a></p>
+<h2>セールを始める前に残しておくこと</h2>
+<ul><li>対象商品・期間・通常価格と値引き後価格</li><li>通常価格で売れる分も含めた販売数の仮定</li><li>原価・送料・手数料・追加広告費</li><li>利益維持に必要な個数と、制作・発送できる上限</li><li>実施後に比較する売上・費用・利益の記録</li></ul>
+<p>複数商品の価格案と12か月の実績を手入力で残したい場合は、<a href="product.html">物販向けExcelの機能と購入前の確認事項</a>をご覧ください。クーポンの利用履歴を自動取得したり、割引による需要増を予測したりする商品ではありません。入力の流れは<a href="product-help.html">操作ガイド</a>を購入前にも読めます。</p>
+<h2>参考資料と計算の範囲</h2>
+<p>固定費・変動費・限界利益の基本は、中小機構J-Net21の<a href="https://j-net21.smrj.go.jp/solution/qa/accounting/Q0240.html">損益分岐点の計算方法と経営改善に向けた活用方法</a>を参考にしています。本記事の値引き・クーポンの数値例は当サイトが作成した仮定で、同資料の事例や推奨施策ではありません。</p>
+<p>関連する整理は、<a href="sales-fee-guide.html">販売手数料の利益計算</a>、<a href="shipping-profit-guide.html">送料込み・送料別の比較</a>、<a href="break-even-guide.html">損益分岐点の考え方</a>でも確認できます。</p>
+<p class="note">1注文1商品・単一価格を基本にした簡易試算です。まとめ買い、返品、在庫処分の判断、税務・会計上の個別処理は別に確認が必要です。将来の販売数・利益を保証するものではありません。</p>
+</article></main><footer><a href="index.html">無料ツール</a><a href="privacy.html">プライバシーポリシー</a><a href="terms.html">利用条件・免責</a></footer><script src="site-events.js"></script></body></html>
