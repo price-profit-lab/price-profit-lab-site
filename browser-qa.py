@@ -51,9 +51,9 @@ def verify_case(browser, base, case):
         expect(page.locator("#cancellationScenarios")).to_contain_text("7.5％（入力中）")
     page.screenshot(path=str(OUTPUT / (case["name"] + "-mobile.png")), full_page=True)
     # Check the real button handler without opening an OS dialog in CI.
-    page.evaluate("window.printCalls=0; window.print=()=>{window.printCalls++}")
+    page.evaluate("() => { window.printCalls=0; window.print=()=>{window.printCalls++}; }")
     page.locator("button[onclick='window.print()']").click()
-    assert page.evaluate("window.printCalls") == 1
+    assert page.evaluate("window.printCalls") == 1, "Print button must invoke the handler exactly once"
     page.set_viewport_size({"width": 794, "height": 1123})
     page.emulate_media(media="print")
     expect(page.locator("header")).to_be_hidden()
