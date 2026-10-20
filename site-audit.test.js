@@ -3,6 +3,51 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const {validPurchaseLinks}=require('./production-smoke.test.js');
+
+function sharingMetadataIssue(html,canonical){
+ const head=html.match(/<head(?:\s[^>]*)?>([\s\S]*?)<\/head>/i);
+ if(!head)return 'missing head';
+ const clean=head[1].replace(/<!--[\s\S]*?-->/g,'').replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
+ const tags=[...clean.matchAll(/<meta\b[^>]*>/gi)].map(match=>{
+  const attrs={};
+  for(const attr of match[0].matchAll(/([:\w-]+)\s*=\s*(["'])([\s\S]*?)\2/g))attrs[attr[1].toLowerCase()]=attr[3];
+  return attrs;
+ });
+ const expected={
+  'og:title':value=>value.trim().length>0,
+  'og:description':value=>value.trim().length>0,
+  'og:url':value=>value===canonical,
+  'og:site_name':value=>value==='価格と利益の計算室',
+  'og:locale':value=>value==='ja_JP',
+  'og:type':value=>['website','article'].includes(value)
+ };
+ for(const [key,valid] of Object.entries(expected)){
+  const matches=tags.filter(attrs=>attrs.property===key);
+  if(matches.length!==1||typeof matches[0].content!=='string'||!valid(matches[0].content))return 'invalid or duplicate '+key;
+ }
+ const cards=tags.filter(attrs=>attrs.name==='twitter:card');
+ if(cards.length!==1||!['summary','summary_large_image'].includes(cards[0].content))return 'invalid or duplicate twitter:card';
+ return null;
+}
+const sampleCanonical='https://price-profit-lab.pages.dev/example';
+const sharingFixture='<head><meta content="A different share title" property="og:title"><meta property="og:description" content="Description"><meta property="og:url" content="'+sampleCanonical+'"><meta property="og:site_name" content="価格と利益の計算室"><meta property="og:locale" content="ja_JP"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"></head>';
+assert.equal(sharingMetadataIssue(sharingFixture,sampleCanonical),null,'Accept metadata attributes in either order');
+assert.equal(sharingMetadataIssue(sharingFixture.replaceAll('"',"'"),sampleCanonical),null,'Accept single-quoted attributes');
+for(const key of ['og:title','og:description','og:url','og:site_name','og:locale','og:type','twitter:card']){
+ const tag=sharingFixture.match(new RegExp('<meta\\b[^>]*(?:property|name)="'+key+'"[^>]*>'))[0];
+ for(const altered of [
+  sharingFixture.replace(tag,''),
+  sharingFixture.replace(tag,tag+tag),
+  sharingFixture.replace(tag,'<!-- '+tag+' -->'),
+  sharingFixture.replace(tag,'')+'<body>'+tag+'</body>',
+  sharingFixture.replace(tag,'<script>'+JSON.stringify(tag)+'</script>')
+ ])assert.ok(sharingMetadataIssue(altered,sampleCanonical),'Reject missing, duplicate, commented, body or script metadata: '+key);
+}
+assert.ok(sharingMetadataIssue(sharingFixture.replace('content="Description"','content="  "'),sampleCanonical),'Reject blank description');
+assert.ok(sharingMetadataIssue(sharingFixture.replace(sampleCanonical,'https://example.com/wrong'),sampleCanonical),'Reject wrong sharing URL');
+assert.ok(sharingMetadataIssue(sharingFixture.replace('content="summary"','content="unsupported"'),sampleCanonical),'Reject invalid card type');
+console.log('Sharing metadata omission, duplicate and false-positive checks passed');
+
 const files=fs.readdirSync('.').filter(f=>f.endsWith('.html'));
 const sitemap=fs.readFileSync('sitemap.xml','utf8');
 let linkCount=0;
@@ -24,6 +69,7 @@ for(const file of files){
  assert.ok(canonical,file+' missing canonical href');
  const expectedCanonical=file==='index.html'?'https://price-profit-lab.pages.dev/':'https://price-profit-lab.pages.dev/'+file.slice(0,-5);
  assert.equal(canonical[1],expectedCanonical,file+' canonical does not match published path');
+ assert.equal(sharingMetadataIssue(html,canonical[1]),null,file+' sharing metadata must be complete and match its canonical URL');
  for(const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)){
   const data=JSON.parse(m[1]);
   assert.equal(data['@context'],'https://schema.org',file+' JSON-LD context invalid');
