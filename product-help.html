@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>物販向けExcelの使い方｜20商品の価格比較・12か月実績管理</title>
+<meta name="description" content="値上げ判断と月次利益管理Excelの使い方。入力する列、価格シナリオの空欄と0の違い、月次実績の記録、エラー・再計算時の確認を説明します。購入前にも閲覧できます。">
+<link rel="canonical" href="https://price-profit-lab.pages.dev/product-help"><link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V55WPDJV07"></script><script>window.dataLayer=window.dataLayer||[];if(location.hostname!=="price-profit-lab.pages.dev")window["ga-disable-G-V55WPDJV07"]=true;function gtag(){if(location.hostname==="price-profit-lab.pages.dev")dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-V55WPDJV07");</script>
+<meta property="og:type" content="article"><meta property="og:locale" content="ja_JP"><meta property="og:site_name" content="価格と利益の計算室"><meta property="og:title" content="物販向けExcelの使い方｜20商品の価格比較・12か月実績管理"><meta property="og:description" content="最初に入力する場所、価格案と実績の区別、空欄と0、入力エラーや再計算時の確認手順をまとめました。"><meta property="og:url" content="https://price-profit-lab.pages.dev/product-help"><meta name="twitter:card" content="summary">
+</head><body><header><a href="index.html"><b>価格と利益の計算室</b></a><nav><a href="product.html">商品詳細</a><a href="guides.html">解説記事</a><a href="index.html#calculator">無料利益計算</a></nav></header><main><article class="panel">
+<h1>物販向けExcelの使い方｜価格比較と月次実績を記録する</h1>
+<p>「値上げ判断と月次利益管理 Excel」の操作案内です。対象ファイルは<strong>profit_strategy_v03.xlsx（修正版v0.3.1）</strong>です。購入前にも、入力する項目や操作の流れを確認できます。</p>
+<p>サロン・レッスン向けのStandard／Proは別商品です。そちらをお使いの方は、<a href="service-excel-help.html">サービス業向けExcelの使い方</a>をご覧ください。</p>
+<nav class="product-toc" aria-label="使い方の目次"><a href="#start">開く・コピーする</a><a href="#inputs">入力する場所</a><a href="#first-example">最初の計算例</a><a href="#actuals">毎月の実績</a><a href="#trouble">困ったとき</a><a href="#environment">確認済み環境</a></nav>
+<h2 id="start">1．原本を残して、作業用コピーを開く</h2>
+<ol><li>BOOTHの購入履歴からZIPファイルをダウンロードし、展開します。</li><li>同梱のSTART-HERE.txtとmanual.htmlを確認します。manual.htmlはブラウザーで読む説明書です。</li><li>profit_strategy_v03.xlsxの原本を残し、別名の作業用コピーをMicrosoft Excelで開きます。</li><li>「はじめに」を読んでから、黄色の入力セルを変更します。灰色の数式セル、行・列の構成は変更せずに始めてください。</li></ol>
+<p>架空の商品・価格案・月次実績がサンプルとして入っています。自分のデータへ置き換える場合は、サンプルの<strong>入力セルだけ</strong>を消して入力します。行全体やシート全体の削除は避けてください。本商品はマクロを使用していません。</p>
+<h2 id="inputs">2．入力する場所と、結果を確認する場所</h2>
+<div class="tablewrap"><table><caption>5シートの役割と入力欄</caption><thead><tr><th scope="col">シート</th><th scope="col">自分で入力する場所</th><th scope="col">確認する内容</th></tr></thead><tbody>
+<tr><th scope="row">はじめに</th><td>B13：1商品あたりの目標月利益</td><td>操作の順番・費用と時間の定義・入力の注意</td></tr>
+<tr><th scope="row">商品別収益</th><td>A〜E列：商品名、現行単価、変動費/件、月販売数、配賦固定費。K列：作業時間/件（任意）</td><td>F〜J列：売上・利益など。L列：参考時間あたり利益</td></tr>
+<tr><th scope="row">価格シナリオ</th><td>C列：変更単価、F列：変更数量、O列：変更費用/件（任意）</td><td>現行・変更後利益、差額、利益維持の最低件数、目標利益の必要件数</td></tr>
+<tr><th scope="row">月次実績</th><td>A〜D列：月、売上、変動費、固定費。H列：その月の目標利益（任意）</td><td>E〜G列：利益・利益率・入力状態。I列：目標との差</td></tr>
+<tr><th scope="row">ダッシュボード</th><td>入力しません</td><td>商品別・価格変更の合計と、月次実績の集計・グラフ</td></tr>
+</tbody></table></div>
+<p>商品別収益と価格シナリオは2〜21行の最大20商品、月次実績は2〜13行の12か月分です。商品別収益の内容が価格シナリオへ参照されますが、価格案から実際の販売実績を自動作成するものではありません。</p>
+<h3>費用と作業時間の入れ方</h3>
+<p>商品別収益のC列には、材料・仕入れ・送料・販売手数料などを1件あたりに整理して含めます。この物販向けExcelには、販売手数料率を別に入力する欄はありません。値上げで手数料などが変わる場合は、価格シナリオのO列に<strong>変更後の費用総額/件</strong>を入れます。増えた分だけを入力する欄ではありません。</p>
+<p>E列の固定費は、共通費を重複なく配分し、合計が対象月の固定費と一致するようにします。<a href="cost-guide.html#allocation-example">固定費配分の数値例</a>も参考にしてください。</p>
+<p>K列の作業時間は、1件あたりの<strong>時間数</strong>です。30分なら0.5時間です。参考時間あたり利益は計算しますが、自分の作業時間を自動で人件費として差し引く欄ではありません。</p>
+<h3>価格シナリオの空欄と0は異なる</h3>
+<ul><li>C・F・O列を空欄にすると、その項目は現行値を使います。</li><li>変更数量へ0を入力すると、変更後の販売数を0件として計算します。</li><li>変更費用へ0を入力すると、変更後費用を0円として計算します。「費用を変えない」意味ではありません。</li><li>未使用の商品行は、入力欄をすべて空欄にします。商品名のない行へ価格案だけを入力しないでください。</li></ul>
+<h2 id="first-example">3．1商品で最初の計算を確かめる</h2>
+<p>以下は操作確認用の架空の例です。原本ではなく、作業用コピーで試してください。サンプルの商品A〜Cが残っている場合、ダッシュボードには他の行も合算されるため、ここでは<strong>2行目の商品だけ</strong>の結果を確認します。</p>
+<div class="tablewrap"><table><caption>2行目に入力する例</caption><thead><tr><th scope="col">シート・セル</th><th scope="col">入力</th></tr></thead><tbody>
+<tr><th scope="row">商品別収益 A2</th><td>テスト商品</td></tr><tr><th scope="row">商品別収益 B2・C2・D2・E2</th><td>単価3000・変動費900・販売数100・固定費80000</td></tr>
+<tr><th scope="row">価格シナリオ C2・F2</th><td>変更単価3300・変更数量90</td></tr><tr><th scope="row">価格シナリオ O2</th><td>空欄（費用は現行900円のまま）</td></tr><tr><th scope="row">はじめに B13</th><td>150000（1商品あたりの目標額）</td></tr>
+</tbody></table></div>
+<p>価格シナリオのH2は現行利益<strong>130,000円</strong>、I2は変更後利益<strong>136,000円</strong>、J2は差額<strong>6,000円</strong>です。利益維持の最低件数K2は<strong>88件</strong>、目標利益の必要件数M2は<strong>96件</strong>になります。</p>
+<p>この例の変動費900円には、別途追加する販売手数料を仮定していません。実際の費用が異なる場合は、その金額へ置き換えてください。販売数90件・96件が実現するという予測ではありません。</p>
+<p>「はじめに」B13は、同じ目標額を各商品の必要件数の計算に使います。事業全体の目標利益を自動で商品へ配分したり、全商品が同時にその目標を達成すると示したりする欄ではありません。</p>
+<h2 id="actuals">4．月次実績は、価格案と分けて手入力する</h2>
+<p>月次実績のA列は<strong>文字列のYYYY-MM形式</strong>です。セルの表示形式を文字列として、例えば2026-10と入力します。同じ月を複数行に入れないようにしてください。B〜D列にはその月の実際の売上・変動費・固定費を入力し、H列には必要に応じてその月の目標利益を入れます。</p>
+<p>「価格シナリオ」は仮定の比較、「月次実績」は結果の記録です。商品別収益の想定値や販売サイトから、月次実績が自動入力されることはありません。未記録の月は入力欄を空欄にし、販売実績0円の月と区別してください。</p>
+<p>入力後は、ダッシュボードで登録商品数や合計と元の入力を照合します。保存して開き直し、変更した値が残っているかも確認してください。</p>
+<h2 id="trouble">5．困ったときの確認</h2>
+<h3>「入力エラー」「入力確認」が表示される</h3>
+<p>商品名、必要な金額・件数の空欄、数値欄へ入った文字、負数、販売数の小数を確認してください。価格案の行に対応する商品別収益の入力も確かめます。月次実績では月の形式・重複も確認してください。目標利益の欄について案内が出る場合は「はじめに」B13を確認します。</p>
+<h3>「算出不可」「—」が表示される</h3>
+<p>変更後単価から変更後費用を引いた残額が0円以下の場合などは、必要件数を算出できません。また、売上や総作業時間が0の場合、利益率・参考時間あたり利益などが「—」になることがあります。表示を消すためだけに、実態と異なる1件・1時間を入力しないでください。</p>
+<h3>入力しても結果が変わらない</h3>
+<ol><li>入力を確定し、正しいシート・黄色セルを変更したか確認します。</li><li>入力状態のエラーと、数式セルを上書きしていないかを確認します。</li><li>Excelの計算方法が「自動」か確認します。Mac版は、Microsoftの<a href="https://support.microsoft.com/ja-jp/excel/copy-a-formula-by-dragging-the-fill-handle-in-excel-for-mac">自動計算の設定についての案内</a>に確認手順があります。メニュー位置は環境により異なります。</li></ol>
+<p>数式を値で上書きすると、再計算の設定だけでは元に戻りません。直後であれば「元に戻す」を試し、戻せない場合は原本の新しいコピーへ入力欄だけを移してください。Microsoftの<a href="https://support.microsoft.com/ja-jp/excel/replace-a-formula-with-its-result-in-excel-for-mac">数式を値に置き換える際の注意</a>も参照できます。参照日：2026年10月20日。</p>
+<h3>スマートフォンや別の表計算アプリで使いたい</h3>
+<p>公開ページをスマートフォンで読めることと、商品のExcelファイルの動作確認は別です。確認済み以外の環境で同じように再計算・入力制限・グラフが動くとは案内していません。次の動作環境と購入ページを確認してください。</p>
+<h2 id="environment">6．動作環境と問い合わせ先</h2>
+<p>確認済みの環境は、MacBook Air M4（2025）／macOS Tahoe 26.5.1／Microsoft Excel 2024 for Mac、バージョン16.114（26101123）です。Windows版や他のExcelバージョンは未検証です。スマートフォン、Numbers、Googleスプレッドシート、LibreOfficeは動作保証対象外です。Microsoft Excelは別途必要です。</p>
+<p>本商品は会計帳簿、確定申告、在庫管理、資金繰り、販売数の予測、販売サイトとの自動同期には対応していません。利益の保証や個別の経営相談を行うものではありません。</p>
+<p>解決しない場合は、<a href="https://price-profit-lab.booth.pm/conversations/new">BOOTHのメッセージ</a>から、OS・Excelのバージョン、該当シート、表示されたエラーをお知らせください。画面を添える場合は、個人情報や実際の取引先情報など不要な情報を隠してください。不具合対応や利用条件は<a href="https://price-profit-lab.booth.pm/items/9001298">BOOTHの商品ページ</a>を確認してください。</p>
+<p><a href="product.html">商品詳細・無料版との違いへ戻る</a> ／ <a href="index.html#calculator">購入せず無料ツールで試す</a></p>
+</article></main><footer><a href="guides.html">解説記事一覧</a><a href="privacy.html">プライバシーポリシー</a><a href="terms.html">利用条件・免責</a></footer><script src="site-events.js"></script></body></html>
