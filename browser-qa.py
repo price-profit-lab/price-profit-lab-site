@@ -102,6 +102,61 @@ def verify_case(browser, base, case):
     page.close()
 
 
+def verify_product_pages(browser, base):
+    products = [
+        ("product", "product-help", {"9001298"}),
+        ("service-excel", "service-excel-help", {"9011039", "9011528"}),
+    ]
+    for width in (375, 1280):
+        page = browser.new_page(viewport={"width": width, "height": 900}, locale="ja-JP")
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+        for product, guide, item_ids in products:
+            page.goto(base + "/" + product + ".html", wait_until="networkidle")
+            expect(page.locator("h1")).to_be_visible()
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), (product, width, "page overflows viewport")
+            purchase = page.locator('a[href^="https://price-profit-lab.booth.pm/items/"]')
+            links = purchase.evaluate_all("els=>els.map(el=>el.getAttribute('href'))")
+            assert set(links) == {"https://price-profit-lab.booth.pm/items/" + item for item in item_ids}, (product, links)
+            for index in range(purchase.count()):
+                link = purchase.nth(index)
+                expect(link).to_be_visible()
+                assert link.inner_text().strip(), "Purchase links need readable text"
+                box = link.bounding_box()
+                assert box and box["x"] >= -1 and box["x"] + box["width"] <= width + 1, (product, width, "purchase link clipped", box)
+            tables = page.locator(".tablewrap")
+            assert tables.count() > 0, "Product comparison tables must exist"
+            for index in range(tables.count()):
+                wrapper = tables.nth(index)
+                assert wrapper.evaluate("el=>el.getBoundingClientRect().right<=innerWidth+1"), (product, width, "table container overflows")
+                assert wrapper.evaluate("el=>el.scrollWidth<=el.clientWidth+1||['auto','scroll'].includes(getComputedStyle(el).overflowX)"), (product, width, "wide table cannot scroll")
+            if product == "service-excel":
+                expect(page.locator(".workbook-screenshots img")).to_have_count(2)
+                for img in page.locator(".workbook-screenshots img").all():
+                    assert img.evaluate("el=>el.complete&&el.naturalWidth>0"), "Product screenshot failed to load"
+                image_scroller = page.locator(".workbook-image-scroll").last
+                image_scroller.focus()
+                assert image_scroller.evaluate("el=>el===document.activeElement"), "Screenshot scroll area must be keyboard focusable"
+                if width == 375:
+                    assert image_scroller.evaluate("el=>el.scrollWidth>el.clientWidth"), "Wide screenshot should scroll on mobile"
+                    image_scroller.press("ArrowRight")
+                    # Wait for the browser's keyboard scrolling, without network access.
+                    page.wait_for_function("document.activeElement.scrollLeft>0")
+            if width == 375:
+                page.evaluate("scrollTo(0,0)")
+                page.screenshot(path=str(OUTPUT / (product + "-mobile.png")))
+                tables.first.screenshot(path=str(OUTPUT / (product + "-comparison-mobile.png")))
+            guide_link = page.locator('a[href="' + guide + '.html"]').first
+            guide_link.click()
+            expect(page).to_have_url(base + "/" + guide + ".html")
+            expect(page.locator("h1")).to_be_visible()
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), (guide, width, "guide overflows viewport")
+            assert not errors, errors
+            print(f"PASS {product} {width}px: viewport, purchase targets, table scrolling, images and guide navigation", flush=True)
+        page.close()
+
+
 def main():
     OUTPUT.mkdir(exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
@@ -112,6 +167,7 @@ def main():
             browser = playwright.chromium.launch()
             for case in CASES:
                 verify_case(browser, base, case)
+            verify_product_pages(browser, base)
             browser.close()
     finally:
         server.shutdown()
