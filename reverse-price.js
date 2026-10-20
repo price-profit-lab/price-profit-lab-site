@@ -15,14 +15,23 @@ function reversePrice(v){
 }
 if(typeof document!=='undefined'){
  const ids=['target','fixedCost','quantity','unitCost','flatFee','rate'];
+ const labels={target:'目標月間利益',fixedCost:'月間固定費',quantity:'想定月間販売数',unitCost:'1件あたり変動費',flatFee:'1件あたり定額手数料',rate:'販売手数料率'};
  const form=document.getElementById('reversePricingForm');
  if(form){
   const fmt=n=>Math.round(n).toLocaleString('ja-JP')+'円';
   function update(){
    const v={};
-   for(const id of ids){const el=document.getElementById(id);if(!el||el.value.trim()===''){showError();return;}v[id]=Number(el.value);}
+   for(const id of ids){const el=document.getElementById(id);el.setAttribute('aria-invalid','false');el.setAttribute('aria-describedby','reverseError');}
+   for(const id of ids){
+    const el=document.getElementById(id),n=Number(el.value);
+    if(el.value.trim()===''){showError(labels[id]+'を入力してください。',id);return;}
+    if(id==='quantity'&&(!Number.isFinite(n)||n<=0||!Number.isInteger(n))){showError('想定月間販売数は1以上の整数で入力してください。',id);return;}
+    if(id==='rate'&&(!Number.isFinite(n)||n<0||n>=100)){showError('販売手数料率は0%以上100%未満で入力してください。',id);return;}
+    if(!Number.isFinite(n)||n<0){showError(labels[id]+'は0以上の数値で入力してください。',id);return;}
+    v[id]=n;
+   }
    const r=reversePrice(v);
-   if(!r){showError();return;}
+   if(!r){showError('入力値が計算可能な範囲を超えています。価格・費用・販売数・手数料率を見直してください。');return;}
    document.getElementById('reverseError').textContent='';
    document.getElementById('reverseResult').hidden=false;
    document.getElementById('reverseSensitivity').hidden=false;
@@ -42,8 +51,9 @@ if(typeof document!=='undefined'){
     }
    }
   }
-  function showError(){
-   document.getElementById('reverseError').textContent='0以上の数値を入力してください。販売数は1以上の整数、手数料率は0%以上100%未満です。';
+  function showError(message,id){
+   if(id)document.getElementById(id).setAttribute('aria-invalid','true');
+   document.getElementById('reverseError').textContent=message;
    document.getElementById('reverseResult').hidden=true;
    document.getElementById('reverseSensitivity').hidden=true;
   }
@@ -54,3 +64,4 @@ if(typeof document!=='undefined'){
  }
 }
 if(typeof module!=='undefined')module.exports={reversePrice};
+
