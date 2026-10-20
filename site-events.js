@@ -10,7 +10,7 @@
   const help=/^(?:\.\/)?(product-help|service-excel-help)(?:\.html)?(?:[#?].*)?$/.exec(href);
   if(help){
    if(page!=='/'+help[1]&&page!=='/'+help[1]+'.html'){
-    gtag('event','excel_help_click',{source_page:page,guide:help[1]});
+    gtag('event',help[1]==='product-help'?'product_help_click':'service_excel_help_click',{source_page:page});
    }
    return;
   }

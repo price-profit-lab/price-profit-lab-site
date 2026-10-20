@@ -167,10 +167,9 @@ for(const [href,guide] of [
  assert.equal(helpEvents.length,count+1,'One event per supported guide navigation');
  const event=helpEvents.at(-1);
  assert.equal(event[0],'event');
- assert.equal(event[1],'excel_help_click');
+ assert.equal(event[1],guide==='product-help'?'product_help_click':'service_excel_help_click');
  assert.equal(event[2].source_page,'/product');
- assert.equal(event[2].guide,guide);
- assert.deepEqual(Object.keys(event[2]),['source_page','guide'],'Only source path and allowlisted guide label are sent');
+ assert.deepEqual(Object.keys(event[2]),['source_page'],'Only source path is sent; guide type uses fixed event names');
  assert.ok(!JSON.stringify(event).includes('private@example.com'),'Never send query values');
 }
 const helpCount=helpEvents.length;
