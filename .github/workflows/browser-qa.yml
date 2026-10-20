@@ -1,4 +1,4 @@
-name: Calculator browser and PDF checks
+name: Calculator and product browser checks
 on:
   workflow_dispatch:
   pull_request:
@@ -15,6 +15,12 @@ on:
       - 'price-increase-calculator.js'
       - 'cancellation-calculator.js'
       - 'style.css'
+      - 'product.html'
+      - 'service-excel.html'
+      - 'product-help.html'
+      - 'service-excel-help.html'
+      - 'assets/service-standard-excel-mac.png'
+      - 'assets/service-pro-actions-excel-mac.png'
 permissions:
   contents: read
 jobs:
@@ -34,7 +40,7 @@ jobs:
         run: |
           python -m playwright install --with-deps chromium
           sudo apt-get install -y fonts-noto-cjk
-      - name: Verify calculators and generated PDFs on localhost
+      - name: Verify calculators, PDFs and product pages on localhost
         run: python browser-qa.py
       - name: Retain sample-only screenshots and PDFs for review
         if: always()
