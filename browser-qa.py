@@ -5,6 +5,7 @@ from io import BytesIO
 from pathlib import Path
 from threading import Thread
 import re
+import unicodedata
 
 from playwright.sync_api import sync_playwright, expect
 from pypdf import PdfReader
@@ -72,11 +73,12 @@ def verify_case(browser, base, case):
     reader = PdfReader(BytesIO(pdf))
     assert 1 <= len(reader.pages) <= 6, (case["name"], "unexpected page count", len(reader.pages))
     text = "\n".join(p.extract_text() or "" for p in reader.pages)
-    normalized = re.sub(r"[\s,]", "", text)
+    # PDF fonts may encode ordinary letter pairs as Unicode ligatures (e.g. fi).
+    normalized = re.sub(r"[\s,]", "", unicodedata.normalize("NFKC", text))
     assert case["pdf_value"] in normalized, (case["name"], "edited input missing from PDF", text)
     assert case["pdf_result"] in normalized, (case["name"], "edited result missing from PDF", text)
     assert "価格と利益の計算室" in normalized, (case["name"], "Japanese text missing", text)
-    assert "price-profit-lab.pages.dev" in text
+    assert "price-profit-lab.pages.dev" in normalized, (case["name"], "source URL missing", text)
     assert "BOOTH" not in text, "Promotional content leaked into print output"
     assert "入力条件と結果を印刷" not in normalized
     # The print rules must never expose a stale result after invalid input.
