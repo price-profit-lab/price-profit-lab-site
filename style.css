@@ -21,3 +21,26 @@ a.secondary-button{display:inline-block;text-decoration:none}
 
 .upgrade-note{background:#f1f6f0;border:1px solid #d0dfd1;border-radius:12px;padding:16px;margin:24px 0}
 .upgrade-note h2{margin-top:0}
+
+.print-only{display:none}
+@media print{
+ .calculator-print-page{color:#000;background:#fff;font-size:10pt;line-height:1.5}
+ .calculator-print-page>header,.calculator-print-page>footer,.calculator-print-page main>:not(.print-include),.calculator-print-page .print-actions,.calculator-print-page .print-omit,.calculator-print-page button{display:none!important}
+ .calculator-print-page [hidden]{display:none!important}
+ .calculator-print-page .print-only{display:block}
+ .calculator-print-page main{max-width:none;padding:0;margin:0}
+ .calculator-print-page .panel{border:0;border-radius:0;box-shadow:none;padding:0;margin:0 0 14pt}
+ .calculator-print-page .print-title{font-size:18pt;font-weight:700;line-height:1.3;margin:0 0 8pt}
+ .calculator-print-page h2{font-size:14pt}.calculator-print-page h3{font-size:11pt}
+ .calculator-print-page .grid,.calculator-print-page .metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:6pt}
+ .calculator-print-page .field{font-size:10pt;break-inside:avoid}
+ .calculator-print-page input{font-size:11pt;padding:4pt;margin-top:2pt;border:1px solid #777;border-radius:0;color:#000}
+ .calculator-print-page input::-webkit-inner-spin-button{display:none}
+ .calculator-print-page .metric{background:#fff;border:1px solid #777;border-radius:0;padding:6pt;break-inside:avoid}
+ .calculator-print-page .metric strong{font-size:14pt}.calculator-print-page .metric span{font-size:9pt}
+ .calculator-print-page .note,.calculator-print-page .good,.calculator-print-page .bad,.calculator-print-page a{color:#000;font-size:inherit}
+ .calculator-print-page .tablewrap{overflow:visible}.calculator-print-page table{table-layout:fixed}
+ .calculator-print-page td,.calculator-print-page th{font-size:9pt;padding:4pt;overflow-wrap:anywhere}
+ .calculator-print-page tr{break-inside:avoid}.calculator-print-page thead{display:table-header-group}
+ .calculator-print-page .print-only p:not(.print-title){font-size:9pt;overflow-wrap:anywhere}
+}
