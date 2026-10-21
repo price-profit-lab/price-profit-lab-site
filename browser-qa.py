@@ -86,7 +86,8 @@ def verify_case(browser, base, case):
     expect(page.locator("header")).to_be_hidden()
     expect(page.locator("footer")).to_be_hidden()
     expect(page.locator(".print-only")).to_be_visible()
-    expect(page.locator(".print-actions")).to_be_hidden()
+    for action in page.locator(".print-actions").all():
+        expect(action).to_be_hidden()
     expect(page.locator(case["result"])).to_be_visible()
     expect(page.locator(case["field"])).to_be_visible()
     assert page.evaluate("""() => Array.from(document.querySelector('main').children)
