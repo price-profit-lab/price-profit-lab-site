@@ -67,6 +67,12 @@ def verify_case(browser, base, case):
     if case["name"] == "cancellation":
         expect(page.locator("#cancellationScenarios tr")).to_have_count(5)
         expect(page.locator("#cancellationScenarios")).to_contain_text("7.5％（入力中）")
+    jump = page.locator('button[data-calculator-result]')
+    expect(jump).to_be_visible()
+    jump.focus()
+    jump.press("Enter")
+    expect(page.locator('[data-result-focus]:focus')).to_have_count(1)
+    expect(page.locator(case["result"]).locator(".metric strong").first).to_be_in_viewport()
     page.screenshot(path=str(OUTPUT / (case["name"] + "-mobile.png")), full_page=True)
     # Check the real button handler without opening an OS dialog in CI.
     page.evaluate("() => { window.printCalls=0; window.print=()=>{window.printCalls++}; }")
@@ -108,6 +114,10 @@ def verify_case(browser, base, case):
     expect(page.locator(case["error"])).not_to_be_empty()
     assert page.locator(case["result"]).evaluate("el=>getComputedStyle(el).display") == "none"
     page.emulate_media(media="screen")
+    jump.click()
+    expect(page.locator(case["invalid"])).to_be_focused()
+    expect(page.locator(case["invalid"])).to_be_in_viewport()
+    expect(page.locator(case["result"])).to_be_hidden()
     page.locator(case["reset"]).click()
     expect(page.locator(case["metric"])).to_have_text(case["sample"])
     expect(page.locator(case["result"])).to_be_visible()
@@ -115,7 +125,7 @@ def verify_case(browser, base, case):
         expect(page.locator("#cancellationScenarios tr")).to_have_count(4)
         expect(page.locator("#cancel-cancellation")).to_have_value("10")
     assert not errors, errors
-    print(f"PASS {case['name']}: edited input/result, print handler, print CSS, PDF text ({len(reader.pages)} pages), invalid hiding and reset", flush=True)
+    print(f"PASS {case['name']}: edited input/result, print handler, print CSS, PDF text ({len(reader.pages)} pages), invalid hiding, result/error focus navigation and reset", flush=True)
     page.close()
 
 
