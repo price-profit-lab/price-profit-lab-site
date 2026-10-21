@@ -72,3 +72,5 @@ a.secondary-button{display:inline-block;text-decoration:none}
 .selection-result h3{margin-top:0}
 
 #selectionForm>p{display:flex;flex-wrap:wrap;gap:8px}
+.comparison-scroll table{min-width:540px}.comparison-four table{min-width:640px}.comparison-scroll th[scope="row"]{min-width:150px}.comparison-scroll:focus-visible{outline:3px solid #205c45;outline-offset:3px}
+.comparison-scroll caption{text-align:left}@media(max-width:560px){.comparison-scroll table{min-width:460px;table-layout:fixed}.comparison-four table{min-width:640px}.comparison-scroll thead th:first-child{width:150px}}

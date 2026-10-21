@@ -215,6 +215,23 @@ def verify_product_pages(browser, base):
                 wrapper = tables.nth(index)
                 assert wrapper.evaluate("el=>el.getBoundingClientRect().right<=innerWidth+1"), (product, width, "table container overflows")
                 assert wrapper.evaluate("el=>el.scrollWidth<=el.clientWidth+1||['auto','scroll'].includes(getComputedStyle(el).overflowX)"), (product, width, "wide table cannot scroll")
+            comparisons = page.locator(".comparison-scroll")
+            assert comparisons.count() == (3 if product == "product" else 2)
+            for wrapper in comparisons.all():
+                expect(wrapper).to_have_attribute("role", "region")
+                assert wrapper.get_attribute("aria-label"), "Comparison scroll region needs a descriptive name"
+                expect(wrapper.locator("caption")).to_be_visible()
+                wrapper.focus()
+                expect(wrapper).to_be_focused()
+                if width == 375:
+                    assert wrapper.evaluate("el=>el.scrollWidth>el.clientWidth"), "Comparison must keep readable columns on mobile"
+                    assert wrapper.locator("thead th").first.evaluate("el=>el.getBoundingClientRect().width<190"), "Row-label column must leave room for values on mobile"
+                    wrapper.evaluate("el=>el.scrollTo({left:0,behavior:'instant'})")
+                    wrapper.press("ArrowRight")
+                    page.wait_for_function("document.activeElement.scrollLeft>0")
+                    wrapper.evaluate("el=>el.scrollTo({left:el.scrollWidth,behavior:'instant'})")
+                    assert wrapper.locator("tr").first.locator("th").last.evaluate("el=>{const r=el.getBoundingClientRect(),p=el.closest('.comparison-scroll').getBoundingClientRect();return r.right<=p.right+1&&r.left>=p.left-1}"), "Last column must be reachable"
+                    wrapper.evaluate("el=>el.scrollTo({left:0,behavior:'instant'})")
             if product == "service-excel":
                 expect(page.locator(".workbook-screenshots img")).to_have_count(2)
                 for img in page.locator(".workbook-screenshots img").all():
@@ -232,8 +249,13 @@ def verify_product_pages(browser, base):
                     page.wait_for_function("document.activeElement.scrollLeft>0")
             if width == 375:
                 page.evaluate("scrollTo(0,0)")
+                comparisons.first.evaluate("el=>el.scrollTo({left:0,behavior:'instant'})")
                 page.screenshot(path=str(OUTPUT / (product + "-mobile.png")))
                 tables.first.screenshot(path=str(OUTPUT / (product + "-comparison-mobile.png")))
+                comparisons.first.evaluate("el=>el.scrollTo({left:el.scrollWidth,behavior:'instant'})")
+                comparisons.first.screenshot(path=str(OUTPUT / (product + "-comparison-end-mobile.png")))
+            else:
+                comparisons.first.screenshot(path=str(OUTPUT / (product + "-comparison-desktop.png")))
             guide_link = page.locator('a[href="' + guide + '.html"]').first
             guide_link.click()
             expect(page).to_have_url(base + "/" + guide + ".html")
