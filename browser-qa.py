@@ -13,6 +13,10 @@ from pypdf import PdfReader
 ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "browser-qa-output"
 CASES = [
+    dict(name="margin", path="/profit-margin-calculator.html", result="#marginResult",
+         field="#margin-cost", value="1400", metric="#margin-targetPrice", expected="2,058円",
+         invalid="#margin-price", error="#marginError", reset="#marginReset",
+         sample="1,772円", pdf_value="1400", pdf_result="2058"),
     dict(name="profit", path="/", result="#results", field="#newPrice", value="3900",
          metric="#after", expected="190,000円", invalid="#oldPrice", error="#error",
          reset="#resetSample", sample="136,000円", pdf_value="3900", pdf_result="190000"),
@@ -42,11 +46,24 @@ def verify_case(browser, base, case):
     page.on("pageerror", lambda error: errors.append(str(error)))
     # Only the local checkout may be requested. In particular, do not load GA.
     page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
-    page.goto(base + case["path"], wait_until="networkidle")
+    if case["name"] == "margin":
+        page.goto(base + "/profit-margin-guide.html", wait_until="networkidle")
+        page.locator('a[href="profit-margin-calculator.html"]').click()
+        expect(page).to_have_url(base + case["path"])
+    else:
+        page.goto(base + case["path"], wait_until="networkidle")
     expect(page.locator(".print-only")).to_be_hidden()
     page.locator(case["field"]).fill(case["value"])
     expect(page.locator(case["metric"])).to_have_text(case["expected"])
     expect(page.locator(case["result"])).to_be_visible()
+    if case["name"] == "margin":
+        expect(page.locator("#margin-margin")).to_have_text("12.5％")
+        page.locator("#margin-target").fill("95")
+        expect(page.locator("#margin-targetPrice")).to_have_text("算出不可")
+        expect(page.locator("#margin-net")).to_have_text("80円")
+        page.locator("#margin-target").fill("25")
+        expect(page.locator("#margin-targetPrice")).to_have_text("2,058円")
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Margin tool must fit on mobile"
     if case["name"] == "cancellation":
         expect(page.locator("#cancellationScenarios tr")).to_have_count(5)
         expect(page.locator("#cancellationScenarios")).to_contain_text("7.5％（入力中）")

@@ -6,6 +6,9 @@ on:
       - 'cancellation-calculator.js'
       - 'cancellation-calculator.test.js'
       - 'calculator.js'
+      - 'profit-margin.js'
+      - 'profit-margin.test.js'
+      - 'profit-margin-calculator.html'
       - 'test-calculator*.js'
       - 'calculator.test.js'
       - 'calculator.dom.test.js'
@@ -31,6 +34,9 @@ on:
       - 'cancellation-calculator.js'
       - 'cancellation-calculator.test.js'
       - 'calculator.js'
+      - 'profit-margin.js'
+      - 'profit-margin.test.js'
+      - 'profit-margin-calculator.html'
       - 'test-calculator*.js'
       - 'calculator.test.js'
       - 'calculator.dom.test.js'
@@ -65,4 +71,4 @@ jobs:
       - name: Validate calculator syntax and legacy regression cases
         run: node --check calculator.js && node test-calculator.js && node test-calculator-ui.js
       - name: Test profit calculation and boundary cases
-        run: node en/index.test.js && node cancellation-calculator.test.js && node calculator.test.js && node calculator.dom.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-events.test.js && node price-increase-calculator.test.js && node production-smoke.unit.test.js && node site-audit.test.js
+        run: node en/index.test.js && node cancellation-calculator.test.js && node calculator.test.js && node profit-margin.test.js && node calculator.dom.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-events.test.js && node price-increase-calculator.test.js && node production-smoke.unit.test.js && node site-audit.test.js
