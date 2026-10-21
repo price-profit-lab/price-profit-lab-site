@@ -33,6 +33,35 @@ function validImageResponse(res,expectedHash){
  return validAssetResponse(res,expectedHash)&&
   res.body.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]));
 }
+function fragmentLinkErrors(pages){
+ // Reuse the fetched HTML: validate deployed destinations without extra requests.
+ const markup=html=>html.replace(/<!--[\s\S]*?-->/g,'').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
+ const normalize=pathname=>pathname.replace(/\/index(?:\.html)?$/,'/').replace(/\.html$/,'');
+ const documents=new Map([...pages].map(([pathname,html])=>[normalize(pathname),markup(html)]));
+ const errors=[];
+ for(const [source,html] of documents){
+  for(const anchor of html.matchAll(/<a\b[^>]*>/gi)){
+   const href=anchor[0].match(/\shref\s*=\s*(["'])(.*?)\1/i);
+   if(!href)continue;
+   let url;
+   try{url=new URL(href[2].replace(/&amp;/g,'&'),BASE+source);}catch{continue;}
+   if(url.origin!==BASE||!url.hash)continue;
+   // Text fragments can accompany an element fragment, or stand alone.
+   const raw=url.hash.slice(1).split(':~:')[0];
+   if(!raw)continue;
+   const target=normalize(url.pathname);
+   // Image/download links are not HTML fragment destinations.
+   if(!documents.has(target)&&/\.[^/]+$/.test(target))continue;
+   const destination=documents.get(target);
+   if(destination===undefined){errors.push(source+' -> '+target+' (page unavailable)');continue;}
+   let id;
+   try{id=decodeURIComponent(raw);}catch{errors.push(source+' -> '+target+' (invalid fragment)');continue;}
+   const ids=[...destination.matchAll(/\sid\s*=\s*(["'])(.*?)\1/gi)].map(match=>match[2]);
+   if(!ids.includes(id))errors.push(source+' -> '+target+'#'+id+' (anchor missing)');
+  }
+ }
+ return errors;
+}
 function sitemapPaths(xml,expectedXml){
  if(!xml.includes('<urlset'))throw new Error('Missing XML sitemap urlset');
  const urls=[...xml.matchAll(/<loc>\s*(https:\/\/[^<\s]+)\s*<\/loc>/g)].map(m=>m[1]);
@@ -99,6 +128,7 @@ function validResponse(path,res,assets,expectedHeading,expectedAssetHash){
 }
 async function checkOnce(){
  const errors=[];
+ const livePages=new Map();
  let sitemap;
  try{
   sitemap=await fetchResource(BASE+'/sitemap.xml');
@@ -126,6 +156,7 @@ async function checkOnce(){
     const image=images.includes(path);
     const binary=image||assets.includes(path);
     const res=await fetchResource(BASE+path,binary);
+    if(pages.includes(path)&&res.status===200)livePages.set(path,res.body);
     const expectedHash=binary?createHash('sha256').update(fs.readFileSync(pathModule.join(__dirname,path.slice(1)))).digest('hex'):undefined;
     const valid=image?validImageResponse(res,expectedHash):validResponse(path,res,assets,expectedHeading,expectedHash);
     console.log((valid?'PASS':'FAIL')+' '+path+' HTTP '+res.status);
@@ -133,6 +164,10 @@ async function checkOnce(){
    }catch(err){console.error('FAIL '+path+' '+err.message);errors.push(path);}
   }));
  }
+ const linkErrors=fragmentLinkErrors(livePages);
+ for(const error of linkErrors)console.error('FAIL live link '+error);
+ errors.push(...linkErrors);
+ if(!linkErrors.length)console.log('PASS live HTML fragment destinations');
  if(errors.length){console.error('Production checks failed: '+errors.join(', '));return false;}
  console.log('Production checks passed: '+checks.length+' endpoints and sitemap');
  return true;
@@ -146,6 +181,6 @@ async function run(check=checkOnce,wait=ms=>new Promise(resolve=>setTimeout(reso
  return false;
 }
 if(require.main===module)run().then(ok=>{if(!ok)process.exitCode=1;}).catch(err=>{console.error(err);process.exitCode=1;});
-module.exports={sitemapPaths,validPurchaseLinks,validResponse,validImageResponse,validAssetResponse,run};
+module.exports={sitemapPaths,validPurchaseLinks,validResponse,validImageResponse,validAssetResponse,fragmentLinkErrors,run};
 
 

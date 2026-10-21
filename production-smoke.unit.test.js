@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {sitemapPaths,validPurchaseLinks,validResponse,validImageResponse,validAssetResponse,run}=require('./production-smoke.test.js');
+const {sitemapPaths,validPurchaseLinks,validResponse,validImageResponse,validAssetResponse,fragmentLinkErrors,run}=require('./production-smoke.test.js');
 const {createHash}=require('node:crypto');
 const fs=require('node:fs');
 const pathModule=require('node:path');
@@ -106,6 +106,28 @@ for(const filename of ['service-standard-excel-mac.png','service-pro-actions-exc
  assert.equal(validImageResponse({status:200,body:image},'0'.repeat(64)),false,'Wrong expected screenshot must fail');
 }
 console.log('Exact PNG screenshot integrity and fallback checks passed');
+
+const livePages=new Map([
+ ['/', '<a href="service-excel.html#plans">Plans</a><a href="/en/index.html#calculator">English</a>'],
+ ['/service-excel', '<h2 id="plans">Plans</h2><a href="#plans">Same page</a><a href="/#%E6%96%99%E9%87%91">Japanese</a>'],
+ ['/en/', '<h2 id="calculator">Calculator</h2>']
+]);
+livePages.set('/',livePages.get('/')+'<h2 id="料金">料金</h2>');
+assert.deepEqual(fragmentLinkErrors(livePages),[],'Resolve .html, index aliases, same-page and encoded fragments');
+const stale=new Map(livePages);stale.set('/service-excel','<h2 id="old-plans">Old deployment</h2>');
+assert.match(fragmentLinkErrors(stale).join('\n'),/anchor missing/,'Detect source and destination deployment mismatch');
+const missing=new Map(livePages);missing.delete('/service-excel');
+assert.match(fragmentLinkErrors(missing).join('\n'),/page unavailable/,'Detect unavailable destination');
+const ignored=new Map([['/','<!-- <a href="#missing">Hidden</a> --><script>"<a href=\"#missing\">"</script><a href="https://example.com/#external">External</a><a href="#">Top</a><a href="#:~:text=example">Text</a><a href="assets/picture.png#image">Image</a>']]);
+assert.deepEqual(fragmentLinkErrors(ignored),[],'Ignore non-page, external, comment, script and text-only destinations');
+assert.match(fragmentLinkErrors(new Map([['/','<a href="#%broken">Bad</a>']])).join(''),/invalid fragment/);
+const repositoryPages=new Map();
+for(const pathname of [...sitemapPaths(fs.readFileSync('sitemap.xml','utf8')),'/en/']){
+ const filename=pathname==='/'?'index.html':pathname.endsWith('/')?pathname.slice(1)+'index.html':pathname.slice(1)+'.html';
+ repositoryPages.set(pathname,fs.readFileSync(filename,'utf8'));
+}
+assert.deepEqual(fragmentLinkErrors(repositoryPages),[],'All current page fragment links must resolve');
+console.log('Live cross-page fragment and partial deployment regression checks passed');
 
 (async()=>{
  let attempts=0,waits=0;
