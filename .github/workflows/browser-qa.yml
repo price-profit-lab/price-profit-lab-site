@@ -21,6 +21,9 @@ on:
       - 'service-excel-help.html'
       - 'assets/service-standard-excel-mac.png'
       - 'assets/service-pro-actions-excel-mac.png'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
