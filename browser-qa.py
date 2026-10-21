@@ -278,6 +278,60 @@ def verify_analytics_preferences(browser):
     print("PASS analytics preferences: local fixtures at emulated production origin; stop, persistence, calculation, resume; no external requests sent", flush=True)
 
 
+def verify_guide_finder(browser, base):
+    page = browser.new_page(viewport={"width": 375, "height": 812}, locale="ja-JP")
+    page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+    requests = []
+    page.on("request", lambda request: requests.append(request.url))
+    page.goto(base + "/guides.html", wait_until="networkidle")
+    expect(page.locator("#guide-finder")).to_be_visible()
+    entries = page.locator("[data-guide-entry]:visible")
+    expect(entries).to_have_count(26)
+    expect(page.locator("#guideSearchStatus")).to_have_text("26件の案内のうち26件を表示しています。")
+    initial_requests = len(requests)
+    query = page.locator("#guideQuery")
+    query.fill("キャンセル")
+    assert entries.count() > 0
+    for text in entries.all_text_contents():
+        assert "キャンセル" in text
+    page.locator("#guideCategory").select_option("cost")
+    expect(entries).to_have_count(0)
+    expect(page.locator("#guideNoResults")).to_be_visible()
+    query.fill("送料")
+    expect(entries).to_have_count(1)
+    expect(entries.locator("a")).to_have_attribute("href", "shipping-profit-guide.html")
+    page.locator("#guideCategory").select_option("all")
+    query.fill("手数料　利益")
+    assert entries.count() > 0
+    for text in entries.all_text_contents():
+        assert "手数料" in text and "利益" in text
+    query.press("Enter")
+    assert page.url == base + "/guides.html", "Search must not navigate or expose text in a URL"
+    query.fill("<img src=x onerror=alert(1)>")
+    expect(entries).to_have_count(0)
+    expect(page.locator("#guide-finder img")).to_have_count(0)
+    page.locator("#guideReset").click()
+    expect(query).to_be_focused()
+    expect(query).to_have_value("")
+    expect(entries).to_have_count(26)
+    expect(page.locator("#guideNoResults")).to_be_hidden()
+    assert len(requests) == initial_requests, "Filtering must not make network requests"
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
+    page.screenshot(path=str(OUTPUT / "guide-directory-mobile.png"), full_page=True)
+    query.fill("固定費")
+    entries.locator("a").click()
+    expect(page).to_have_url(base + "/cost-guide.html")
+    page.close()
+    context = browser.new_context(java_script_enabled=False, viewport={"width": 375, "height": 812})
+    context.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+    page = context.new_page()
+    page.goto(base + "/guides.html")
+    expect(page.locator("#guide-finder")).to_be_hidden()
+    expect(page.locator("[data-guide-entry]:visible")).to_have_count(26)
+    context.close()
+    print("PASS guide finder: keywords, category, combined/empty/reset, mobile, navigation, no network or URL query, no-JS fallback", flush=True)
+
+
 def main():
     OUTPUT.mkdir(exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
@@ -288,6 +342,7 @@ def main():
             browser = playwright.chromium.launch()
             for case in CASES:
                 verify_case(browser, base, case)
+            verify_guide_finder(browser, base)
             verify_article_examples(browser, base)
             verify_product_pages(browser, base)
             verify_analytics_preferences(browser)
