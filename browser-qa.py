@@ -350,6 +350,24 @@ def verify_reverse_price_boundary(browser, base):
     print("PASS reverse price: exact whole-yen boundary, real fraction, sensitivity rows and reset", flush=True)
 
 
+def verify_breadcrumbs(browser, base):
+    page = browser.new_page(viewport={"width": 375, "height": 812}, locale="ja-JP")
+    page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+    for filename, parent in [("profit-margin-guide", "guides"), ("service-pricing-guide", "guides"), ("product-help", "product"), ("service-excel-help", "service-excel")]:
+        page.goto(base + "/" + filename + ".html", wait_until="networkidle")
+        trail = page.get_by_role("navigation", name="現在位置")
+        expect(trail).to_be_visible()
+        expect(trail.locator('[aria-current="page"]')).to_have_text(page.locator("h1").inner_text().replace("\n", ""))
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), (filename, "breadcrumb overflows")
+        page.screenshot(path=str(OUTPUT / (filename + "-breadcrumb-mobile.png")))
+        link = trail.locator('a[href="' + parent + '.html"]')
+        link.focus()
+        link.press("Enter")
+        expect(page).to_have_url(base + "/" + parent + ".html")
+    page.close()
+    print("PASS mobile breadcrumbs: current page, parent navigation by keyboard, width and layout", flush=True)
+
+
 def main():
     OUTPUT.mkdir(exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
@@ -360,6 +378,7 @@ def main():
             browser = playwright.chromium.launch()
             for case in CASES:
                 verify_case(browser, base, case)
+            verify_breadcrumbs(browser, base)
             verify_reverse_price_boundary(browser, base)
             verify_guide_finder(browser, base)
             verify_article_examples(browser, base)

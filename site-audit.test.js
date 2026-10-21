@@ -128,3 +128,52 @@ for(const asset of ['calculator.js','reverse-price.js','price-increase-calculato
 }
 console.log('Static site checks passed: '+files.length+' pages, '+linkCount+' local references');
 
+const decodeLabel=text=>text.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#x27;/g,"'");
+let breadcrumbPages=0;
+for(const file of files){
+ const html=fs.readFileSync(file,'utf8');
+ const data=[...html.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
+ const trails=data.filter(item=>item['@type']==='BreadcrumbList');
+ const nav=html.match(/<nav class="breadcrumb" aria-label="現在位置">([\s\S]*?)<\/nav>/);
+ if(['index.html','privacy.html','terms.html'].includes(file)){
+  assert.equal(trails.length,0,file+' should not acquire an extra trail');
+  continue;
+ }
+ assert.equal(trails.length,1,file+' needs one breadcrumb schema');
+ assert.ok(nav,file+' needs a visible breadcrumb navigation');
+ const visible=[...nav[1].matchAll(/<li><(a|span)\b([^>]*)>([^<]*)<\/\1><\/li>/g)];
+ const items=trails[0].itemListElement;
+ assert.ok(items.length>=2&&items.length<=3,file+' invalid hierarchy depth');
+ assert.equal(visible.length,items.length,file+' visible and structured trails differ');
+ const heading=decodeLabel(html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/)[1].replace(/<[^>]*>/g,'')).trim();
+ for(let index=0;index<items.length;index++){
+  const item=items[index],entry=visible[index];
+  assert.equal(item['@type'],'ListItem');
+  assert.equal(item.position,index+1,file+' unordered positions');
+  assert.equal(item.name,decodeLabel(entry[3]),file+' invisible/mismatched breadcrumb name');
+  if(index===items.length-1){
+   assert.equal(entry[1],'span');assert.match(entry[2],/aria-current="page"/);
+   assert.equal(item.name,heading,file+' current breadcrumb must match page heading');
+   assert.equal(item.item,'https://price-profit-lab.pages.dev/'+file.slice(0,-5));
+  }else{
+   assert.equal(entry[1],'a');
+   const target=entry[2].match(/href="([^"]+)"/)[1];
+   assert.equal(item.item,'https://price-profit-lab.pages.dev/'+(target==='index.html'?'':target.replace(/\.html$/,'')));
+  }
+ }
+ assert.equal(items[0].item,'https://price-profit-lab.pages.dev/');
+ if(file.endsWith('-guide.html'))assert.equal(items[1].item,'https://price-profit-lab.pages.dev/guides');
+ if(file==='product-help.html')assert.equal(items[1].item,'https://price-profit-lab.pages.dev/product');
+ if(file==='service-excel-help.html')assert.equal(items[1].item,'https://price-profit-lab.pages.dev/service-excel');
+ breadcrumbPages++;
+}
+const siteData=[...homepage.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1])).filter(item=>item['@type']==='WebSite');
+assert.equal(siteData.length,1);assert.equal(siteData[0].name,'価格と利益の計算室');assert.equal(siteData[0].url,'https://price-profit-lab.pages.dev/');
+for(const file of ['index.html','reverse-price-calculator.html','price-increase-calculator.html','cancellation-calculator.html','profit-margin-calculator.html']){
+ const data=[...fs.readFileSync(file,'utf8').matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
+ const apps=data.filter(item=>item['@type']==='WebApplication');
+ assert.equal(apps.length,1,file+' needs one tool definition');
+ assert.equal(apps[0].offers.price,'0');assert.equal(apps[0].offers.priceCurrency,'JPY');
+}
+console.log('Visible/schema hierarchy consistency passed: '+breadcrumbPages+' pages; site name and 5 free-tool definitions checked');
+
