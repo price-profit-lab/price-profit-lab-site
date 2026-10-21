@@ -518,6 +518,39 @@ def verify_cancellation_article_examples(browser, base):
     print("PASS cancellation article examples: 3 links, fixed values, edit/switch/reset, mobile width, print exclusion and unknown URL ignored", flush=True)
 
 
+
+def verify_homepage_entry(browser, base):
+    targets = ["#calculator", "reverse-price-calculator.html", "price-increase-calculator.html",
+               "profit-margin-calculator.html", "cancellation-calculator.html"]
+    for width in [375, 1280]:
+        page = browser.new_page(viewport={"width": width, "height": 900}, locale="ja-JP")
+        page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+        page.goto(base + "/", wait_until="networkidle")
+        navigation = page.get_by_role("navigation", name="5つの無料ツールを目的で選ぶ")
+        expect(navigation.get_by_role("link")).to_have_count(5)
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), (width, "homepage overflows")
+        expect(page.locator("#after")).to_have_text("136,000円")
+        assert page.locator("#calculator").evaluate("el => !!(el.compareDocumentPosition(document.querySelector('#business-start')) & Node.DOCUMENT_POSITION_FOLLOWING)")
+        page.screenshot(path=str(OUTPUT / f"homepage-entry-{width}.png"))
+        for target in targets:
+            page.goto(base + "/", wait_until="networkidle")
+            navigation.locator(f'a[href="{target}"]').click()
+            if target.startswith("#"):
+                expect(page.locator("#calculator h2")).to_be_in_viewport()
+                page.screenshot(path=str(OUTPUT / f"homepage-input-{width}.png"))
+            else:
+                expect(page).to_have_url(base + "/" + target)
+        page.close()
+    context = browser.new_context(java_script_enabled=False, viewport={"width": 375, "height": 900})
+    context.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+    page = context.new_page()
+    page.goto(base + "/")
+    expect(page.get_by_role("navigation", name="5つの無料ツールを目的で選ぶ").get_by_role("link")).to_have_count(5)
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
+    context.close()
+    print("PASS homepage entry: 5 destinations, mobile/desktop, sample result unchanged, inputs before industry guide, no-JS links", flush=True)
+
+
 def main():
     OUTPUT.mkdir(exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
@@ -528,6 +561,7 @@ def main():
             browser = playwright.chromium.launch()
             for case in CASES:
                 verify_case(browser, base, case)
+            verify_homepage_entry(browser, base)
             verify_product_selection(browser, base)
             verify_breadcrumbs(browser, base)
             verify_reverse_price_boundary(browser, base)
