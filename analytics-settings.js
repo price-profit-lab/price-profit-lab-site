@@ -5,7 +5,7 @@ function initAnalyticsSettings(doc,win){
  const key='ppl-analytics-opt-out',flag='ga-disable-G-V55WPDJV07';
  stop.hidden=false;resume.hidden=false;
  try{status.textContent=win.localStorage.getItem(key)==='1'?'このブラウザーでは計測を停止する設定です。':'このブラウザーでは通常の計測を利用する設定です。';}
- catch(_){status.textContent='設定を読み取れないため、このページでは計測を停止しています。ブラウザーの保存設定をご確認ください。';}
+ catch(_){win[flag]=true;status.textContent='設定を読み取れないため、このページでは計測を停止しています。ブラウザーの保存設定をご確認ください。';}
  stop.addEventListener('click',()=>{
   win[flag]=true;
   try{

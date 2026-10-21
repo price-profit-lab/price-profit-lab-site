@@ -24,4 +24,5 @@ function controls({blocked=false,ignoreWrite=false}={}){
 const ui=controls();assert.equal(ui.els.analyticsStop.hidden,false);ui.els.analyticsStop.listeners.click();assert.equal(ui.value(),'1');assert.equal(ui.win[flag],true);assert.match(ui.els.analyticsStatus.textContent,/停止しました/);ui.els.analyticsResume.listeners.click();assert.equal(ui.value(),null);assert.equal(ui.reloads(),1);
 for(const options of [{blocked:true},{ignoreWrite:true}]){const c=controls(options);c.els.analyticsStop.listeners.click();assert.equal(c.win[flag],true);assert.match(c.els.analyticsStatus.textContent,/保存できません/);}
 const fail=controls({blocked:true});fail.els.analyticsResume.listeners.click();assert.equal(fail.reloads(),0);assert.equal(fail.win[flag],true);
+assert.equal(controls({blocked:true}).win[flag],true,'A settings read failure must actually stop this page');
 console.log('Analytics: production/preview, stored opt-out, blocked storage, cross-tab stop, controls and persistence errors passed');
