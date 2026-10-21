@@ -121,7 +121,7 @@ assert.equal(validResponse('/en/',{status:404,body:english},assets,'Calculate pr
 assert.equal(validResponse('/en/',page('/en/',english),assets,'New heading'),false,'Stale English heading must fail');
 console.log('English calculator production identity and fallback checks passed');
 
-for(const filename of ['service-standard-excel-mac.png','service-pro-actions-excel-mac.png']){
+for(const filename of ['service-standard-excel-mac.png','service-pro-actions-excel-mac.png','free-tools-share.png']){
  const image=fs.readFileSync(pathModule.join(__dirname,'assets',filename));
  const hash=createHash('sha256').update(image).digest('hex');
  assert.equal(validImageResponse({status:200,body:image},hash),true,'Exact deployed screenshot must pass');
