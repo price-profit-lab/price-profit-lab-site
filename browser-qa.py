@@ -200,7 +200,7 @@ def verify_product_pages(browser, base):
             page.goto(base + "/" + product + ".html", wait_until="networkidle")
             expect(page.locator("h1")).to_be_visible()
             if product == "service-excel":
-                expect(page.locator("h1")).to_contain_text("料金設定をExcelで比較")
+                expect(page.locator("h1")).to_contain_text("料金設定Excel")
                 expect(page.get_by_text("Standard 1,480円／Pro 2,980円（税込・買い切り）", exact=True)).to_be_in_viewport()
                 page.locator('.hero a[href="#environment"]').click()
                 expect(page.locator("#environment")).to_be_in_viewport()
