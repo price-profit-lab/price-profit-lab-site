@@ -58,3 +58,9 @@ a.secondary-button{display:inline-block;text-decoration:none}
 #guide-finder button{padding:10px 16px;border:1px solid #205c45;border-radius:8px;background:#fff;color:#205c45;font:inherit;cursor:pointer}
 #guide-finder button:focus-visible,#guide-finder select:focus-visible{outline:3px solid #d39432;outline-offset:3px}
 [data-guide-entry]{margin-block:10px}
+
+.breadcrumb{font-size:14px;line-height:1.6;margin-bottom:18px;color:#53685e}
+.breadcrumb ol{display:flex;flex-wrap:wrap;gap:6px 10px;list-style:none;margin:0;padding:0}
+.breadcrumb li{min-width:0;overflow-wrap:anywhere}
+.breadcrumb li+li::before{content:'›';margin-right:10px;color:#66796e}
+.breadcrumb [aria-current="page"]{color:#20352f}
