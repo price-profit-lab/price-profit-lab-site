@@ -173,12 +173,14 @@ def verify_article_examples(browser, base):
     table = page.locator("#discount-count-table")
     expect(table.locator("tbody tr")).to_have_count(5)
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Discount table must not overflow the mobile page"
-    page.screenshot(path=str(OUTPUT / "discount-count-table-mobile.png"))
+    table.locator("..").screenshot(path=str(OUTPUT / "discount-count-table-mobile.png"))
     table.locator("..").focus()
     expect(table.locator("..")).to_be_focused()
+    table.locator("..").press("ArrowRight")
+    page.wait_for_function("document.querySelector('#discount-count-table').parentElement.scrollLeft > 0")
     page.set_viewport_size({"width": 1280, "height": 900})
     page.locator("#margin-discount-table").scroll_into_view_if_needed()
-    page.screenshot(path=str(OUTPUT / "discount-count-table-desktop.png"))
+    table.locator("..").screenshot(path=str(OUTPUT / "discount-count-table-desktop.png"))
     print("PASS discount reference table: related-article entry, mobile width, keyboard scroll region and desktop layout", flush=True)
     assert not errors, errors
     page.close()
