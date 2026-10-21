@@ -1,0 +1,33 @@
+name: Sitemap HTTP diagnostic
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'sitemap-diagnostic.py'
+      - '.github/workflows/sitemap-diagnostic.yml'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+jobs:
+  sitemap-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare four public HTTP responses without cookies or credentials
+        run: python sitemap-diagnostic.py
+      - name: Retain diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sitemap-http-diagnostic
+          path: sitemap-diagnostic-output/report.json
+          retention-days: 7
+          if-no-files-found: ignore
