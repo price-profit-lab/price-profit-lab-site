@@ -37,7 +37,26 @@ function update(){
  $('diff').className=r.diff>=0?'good':'bad';
  const rows=[0,5,10,15,20,25,30,40,50];$('scenarios').replaceChildren();for(const pct of rows){const qty=Math.floor(v.oldCount*(100-pct)/100);const p=r.newMargin*qty-v.fixedCost;const tr=document.createElement('tr');for(const s of [pct+'%',qty.toLocaleString('ja-JP')+'件',yen(p),yen(p-r.before)]){const td=document.createElement('td');td.textContent=s;tr.append(td)}$('scenarios').append(tr)}
 }
-if(typeof document!=='undefined'&&$('oldPrice')){let used=false;fields.forEach(f=>$(f).addEventListener('input',()=>{update();if(!used&&!$('error').textContent){used=true;if(typeof gtag==='function')gtag('event','calculator_interaction');}}));const reset=$('resetSample');if(reset)reset.addEventListener('click',()=>{for(const f of fields)$(f).value=$(f).defaultValue;update();});update();}
+if(typeof document!=='undefined'&&$('oldPrice')){
+ let used=false;
+ const interact=()=>{update();if(!used&&!$('error').textContent){used=true;if(typeof gtag==='function')gtag('event','calculator_interaction');}};
+ const examples={
+  'example-shop':{label:'手数料のあるネット販売',values:{oldPrice:3000,newPrice:3300,unitCost:1300,oldCount:100,newCount:85,fixedCost:50000,rate:5,flatFee:40,target:101000,hours:0}},
+  'example-discount':{label:'10％値引き',values:{oldPrice:3000,newPrice:2700,unitCost:1500,oldCount:100,newCount:128,fixedCost:30000,rate:5,flatFee:40,target:101000,hours:0}}
+ };
+ const setExample=(id,manual)=>{
+  if(!Object.hasOwn(examples,id))return;
+  const example=examples[id];fields.forEach(field=>{$(field).value=String(example.values[field]);});
+  if(manual)interact();else update();
+  if($('exampleStatus'))$('exampleStatus').textContent=example.label+'の架空例を入力しました。数値は自由に変更できます。';
+ };
+ fields.forEach(f=>$(f).addEventListener('input',interact));
+ for(const id of Object.keys(examples)){const button=$(id);if(button)button.addEventListener('click',()=>setExample(id,true));}
+ const reset=$('resetSample');if(reset)reset.addEventListener('click',()=>{for(const f of fields)$(f).value=$(f).defaultValue;if($('exampleStatus'))$('exampleStatus').textContent='基本サンプルに戻しました。';update();});
+ update();
+ // Only fixed, public example labels are accepted; never read amounts from URLs.
+ if(typeof location!=='undefined')setExample(location.hash.slice(1),false);
+}
 if(typeof module!=='undefined')module.exports={calc};
 
 

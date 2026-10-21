@@ -216,3 +216,20 @@ for(const [file,item,eventName] of [
 }
 console.log('Single purchase-click events and Standard/Pro separation passed');
 
+const presetEvents=[];
+const presetListeners={};
+vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),{
+ document:{addEventListener(type,fn){presetListeners[type]=fn}},
+ location:{pathname:'/discount-profit-guide'},gtag:(...args)=>presetEvents.push(args)
+});
+for(const href of ['index.html#example-discount','index.html#example-shop']){
+ presetListeners.click({target:{closest(){return {getAttribute(){return href}}}}});
+}
+assert.equal(presetEvents.length,2);
+for(const event of presetEvents){
+ assert.equal(event[1],'free_tool_navigation');
+ assert.equal(event[2].tool,'profit-calculator');
+ assert.deepEqual(Object.keys(event[2]),['source_page','tool']);
+}
+console.log('Article example links retain free-tool navigation measurement');
+

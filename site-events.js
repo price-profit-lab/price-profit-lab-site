@@ -30,7 +30,7 @@
    return;
   }
   // Track free-tool navigation, including the homepage calculator anchor. No form values are sent.
-  if(/^(?:index(?:\.html)?)?#calculator$/.test(href)&&page!=='/'&&page!=='/index.html'){
+  if(/^(?:index(?:\.html)?)?#(?:calculator|example-shop|example-discount)$/.test(href)&&page!=='/'&&page!=='/index.html'){
    gtag('event','free_tool_navigation',{source_page:page,tool:'profit-calculator'});
    return;
   }
