@@ -107,7 +107,7 @@ async function checkOnce(){
  let paths;
  try{paths=sitemapPaths(sitemap.body,fs.readFileSync(pathModule.join(__dirname,'sitemap.xml'),'utf8'));console.log('PASS /sitemap.xml '+paths.length+' URLs');}
  catch(err){console.error('FAIL /sitemap.xml '+err.message);return false;}
- const assets=['/profit-margin.js','/cancellation-calculator.js','/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/style.css'];
+ const assets=['/calculator-navigation.js','/profit-margin.js','/cancellation-calculator.js','/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/style.css'];
  // Include the English calculator even though it is not in the Japanese sitemap.
  const pages=[...new Set([...paths,'/en/'])];
  const images=['/assets/service-standard-excel-mac.png','/assets/service-pro-actions-excel-mac.png'];

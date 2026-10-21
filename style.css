@@ -46,3 +46,8 @@ a.secondary-button{display:inline-block;text-decoration:none}
  .calculator-print-page tr{break-inside:avoid}.calculator-print-page thead{display:table-header-group}
  .calculator-print-page .print-only p:not(.print-title){font-size:9pt;overflow-wrap:anywhere}
 }
+
+/* Result navigation keeps focus visible without animated scrolling. */
+[data-result-focus]{scroll-margin-top:16px}
+[data-result-focus]:focus{outline:3px solid #d39432;outline-offset:4px}
+@media print{[data-result-focus]{outline:none!important}}
