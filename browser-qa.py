@@ -86,7 +86,8 @@ def verify_case(browser, base, case):
     expect(page.locator("header")).to_be_hidden()
     expect(page.locator("footer")).to_be_hidden()
     expect(page.locator(".print-only")).to_be_visible()
-    expect(page.locator(".print-actions")).to_be_hidden()
+    for action in page.locator(".print-actions").all():
+        expect(action).to_be_hidden()
     expect(page.locator(case["result"])).to_be_visible()
     expect(page.locator(case["field"])).to_be_visible()
     assert page.evaluate("""() => Array.from(document.querySelector('main').children)
@@ -486,6 +487,37 @@ def verify_product_selection(browser, base):
     print("PASS product selection: free/3 products/out-of-scope/no-Excel/unknown, no stale result, keyboard/reset/mobile, no network or URL answers, no-JS table", flush=True)
 
 
+def verify_cancellation_article_examples(browser, base):
+    page = browser.new_page(viewport={"width": 375, "height": 812}, locale="ja-JP")
+    errors = []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+    for count, price, profit in [(80, "6261", "200,068.24円"), (64, "7155", "200,004.16円"), (48, "8647", "200,023.89円")]:
+        page.goto(base + "/service-capacity-guide.html", wait_until="networkidle")
+        page.locator(f'a[href="cancellation-calculator.html#example-capacity-{count}"]').click()
+        expect(page.locator("#cancel-price")).to_have_value(price)
+        expect(page.locator("#cancel-bookings")).to_have_value(str(count))
+        expect(page.locator("#cancel-result-profit")).to_have_text(profit)
+        expect(page.locator("#cancellationExampleStatus")).to_contain_text("架空例を入力しました")
+        expect(page.locator("#cancel-price")).to_be_in_viewport()
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
+    page.locator("#cancel-cost").fill("1")
+    page.locator("#example-capacity-80").click()
+    expect(page.locator("#cancel-cost")).to_have_value("2600")
+    expect(page.locator("#cancel-result-profit")).to_have_text("200,068.24円")
+    page.screenshot(path=str(OUTPUT / "capacity-example-mobile.png"), full_page=True)
+    page.emulate_media(media="print")
+    expect(page.locator("#cancellationExamples")).to_be_hidden()
+    page.emulate_media(media="screen")
+    page.locator("#cancellationReset").click()
+    expect(page.locator("#cancel-result-profit")).to_have_text("181,840円")
+    page.goto(base + "/cancellation-calculator.html?price=1#unknown", wait_until="networkidle")
+    expect(page.locator("#cancel-price")).to_have_value("6000")
+    assert not errors, errors
+    page.close()
+    print("PASS cancellation article examples: 3 links, fixed values, edit/switch/reset, mobile width, print exclusion and unknown URL ignored", flush=True)
+
+
 def main():
     OUTPUT.mkdir(exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
@@ -501,6 +533,7 @@ def main():
             verify_reverse_price_boundary(browser, base)
             verify_guide_finder(browser, base)
             verify_article_examples(browser, base)
+            verify_cancellation_article_examples(browser, base)
             verify_product_pages(browser, base)
             verify_analytics_preferences(browser)
             browser.close()

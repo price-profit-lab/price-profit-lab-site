@@ -31,6 +31,12 @@ function initCancellationCalculator(doc){
  const scenarios=doc.getElementById('cancellationScenarios');
  const money=n=>(Object.is(n,-0)?0:n).toLocaleString('ja-JP',{maximumFractionDigits:2})+'円';
  const count=n=>n.toLocaleString('ja-JP',{maximumFractionDigits:2})+'件';
+ const examples={
+  'example-capacity-80':{label:'予約80件・料金6,261円',price:6261,bookings:80},
+  'example-capacity-64':{label:'予約64件・料金7,155円',price:7155,bookings:64},
+  'example-capacity-48':{label:'予約48件・料金8,647円',price:8647,bookings:48}
+ };
+ const exampleStatus=doc.getElementById('cancellationExampleStatus');
  let tracked=false;
  function update(){
   error.textContent='';
@@ -68,14 +74,37 @@ function initCancellationCalculator(doc){
   }
   return true;
  }
- for(const input of Object.values(inputs))input.addEventListener('input',()=>{
+ function interact(){
   if(update()&&!tracked){tracked=true;if(typeof gtag==='function')gtag('event','cancellation_calculator_interaction');}
- });
+ }
+ function setExample(id,manual){
+  if(!Object.hasOwn(examples,id))return;
+  const example=examples[id];
+  const values={price:example.price,cost:2600,fee:3,fixed:50000,bookings:example.bookings,cancellation:10};
+  for(const [key,value] of Object.entries(values))inputs[key].value=String(value);
+  if(exampleStatus)exampleStatus.textContent=example.label+'の架空例を入力しました。数値は自由に変更できます。';
+  if(manual)interact();else update();
+ }
+ for(const input of Object.values(inputs))input.addEventListener('input',interact);
+ const exampleControls=doc.getElementById('cancellationExamples');
+ if(exampleControls)exampleControls.hidden=false;
+ for(const id of Object.keys(examples)){
+  const button=doc.getElementById(id);
+  if(button)button.addEventListener('click',()=>setExample(id,true));
+ }
  doc.getElementById('cancellationReset').addEventListener('click',()=>{
   for(const input of Object.values(inputs))input.value=input.defaultValue;
+  if(exampleStatus)exampleStatus.textContent='基本サンプルに戻しました。';
   update();
  });
  update();
+ // Only fixed public examples are accepted. Never parse amounts from a URL.
+ const hash=doc.defaultView&&doc.defaultView.location?doc.defaultView.location.hash:'';
+ const id=hash.slice(1);
+ if(Object.hasOwn(examples,id)){
+  setExample(id,false);
+  if(typeof form.scrollIntoView==='function')form.scrollIntoView({behavior:'instant',block:'start'});
+ }
 }
 if(typeof document!=='undefined')initCancellationCalculator(document);
 if(typeof module!=='undefined')module.exports={calculateCancellation,initCancellationCalculator};
