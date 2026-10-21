@@ -73,6 +73,33 @@ const textOnly=service.replace(/href="https:\/\/price-profit-lab.booth.pm\/items
 assert.equal(validResponse('/service-excel',page('/service-excel',textOnly),assets),false,'URLs left in text cannot replace live purchase links');
 console.log('Actual purchase anchors, product identity and commented-link regression checks passed');
 
+// Keep both valid IDs present so identity tests cannot pass merely by counting IDs.
+const swapped=service.replace('items/9011039','items/TEMP').replace('items/9011528','items/9011039').replace('items/TEMP','items/9011528');
+assert.equal(validResponse('/service-excel',page('/service-excel',swapped),assets),false,'Reject Standard/Pro destinations swapped within a valid product set');
+const serviceHtml=fs.readFileSync('service-excel.html','utf8');
+const merchandiseHtml=fs.readFileSync('product.html','utf8');
+assert.equal(validPurchaseLinks(serviceHtml,['9011039','9011528']),true,'Current tracked service buttons must pass');
+assert.equal(validPurchaseLinks(merchandiseHtml,['9001298']),true,'Current merchandise buttons, including encoded handlers, must pass');
+for(const [from,to] of [
+ ["product_id:'9011039'","product_id:'9011528'"],
+ ["'booth_standard_click'","'booth_pro_click'"],
+ ['BOOTHでStandardの詳細','BOOTHでProの詳細'],
+ ['BOOTHでStandardの詳細','BOOTHで商品の詳細'],
+ ['data-ga4-booth-click="1" onclick=','data-ga4-booth-click="1" data-onclick=']
+]){
+ assert.ok(serviceHtml.includes(from),'Regression mutation must alter current markup');
+ assert.equal(validPurchaseLinks(serviceHtml.replace(from,to),['9011039','9011528']),false,'Reject mismatched tracked purchase identity: '+from);
+}
+const encoded=serviceHtml.replace(/'/g,'&#39;');
+assert.equal(validPurchaseLinks(encoded,['9011039','9011528']),true,'HTML-encoded event handlers must pass');
+const nested=service.replace('>Standard</a>','><strong>Standard</strong></a>');
+assert.equal(validPurchaseLinks(nested,['9011039','9011528']),true,'Nested presentation markup must retain visible identity');
+assert.equal(validPurchaseLinks(buy('9001298')+'<a data-ga4-booth-click="1" href="#">Broken',['9001298']),false,'An unclosed tracked anchor cannot evade checks');
+assert.equal(validPurchaseLinks(buy('9001298')+'<a href="'+shop+'9001298">Unclosed',['9001298']),false,'An unclosed purchase anchor must fail');
+assert.equal(validPurchaseLinks(buy('9001298')+'<!-- <a href="'+shop+'9011039">Standard</a> -->',['9001298']),true,'Commented product labels do not affect identity');
+console.log('Purchase label, destination and analytics identity regression checks passed');
+
+
 const currentXml=xml.replace('</urlset>','<url><loc>'+base+'/cancellation-profit-guide</loc></url></urlset>');
 assert.throws(()=>sitemapPaths(xml,currentXml),/Sitemap differs from repository/,'Old live sitemap must fail');
 assert.equal(sitemapPaths(currentXml,currentXml).length,urls.length+1);
