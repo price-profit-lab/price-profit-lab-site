@@ -6,6 +6,8 @@ from pathlib import Path
 from threading import Thread
 import re
 import unicodedata
+import mimetypes
+from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright, expect
 from pypdf import PdfReader
@@ -217,6 +219,65 @@ def verify_product_pages(browser, base):
         page.close()
 
 
+def verify_analytics_preferences(browser):
+    # Emulate the production origin using local fixture bytes. Never visit production
+    # or send requests to Google Analytics from this test.
+    context = browser.new_context(viewport={"width": 375, "height": 812}, locale="ja-JP")
+    google_attempts = []
+    fixtures = {"/privacy": "privacy.html", "/": "index.html", "/analytics.js": "analytics.js",
+                "/analytics-settings.js": "analytics-settings.js", "/style.css": "style.css",
+                "/calculator.js": "calculator.js", "/calculator-navigation.js": "calculator-navigation.js",
+                "/site-events.js": "site-events.js"}
+
+    def route_local(route):
+        parsed = urlparse(route.request.url)
+        if parsed.hostname == "price-profit-lab.pages.dev" and parsed.path in fixtures:
+            local_file = ROOT / fixtures[parsed.path]
+            mime = mimetypes.guess_type(str(local_file))[0] or "application/octet-stream"
+            route.fulfill(status=200, content_type=mime, body=local_file.read_bytes())
+        else:
+            if parsed.hostname == "www.googletagmanager.com":
+                google_attempts.append(route.request.url)
+            route.abort()
+
+    context.route("**/*", route_local)
+    page = context.new_page()
+    errors = []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    origin = "https://price-profit-lab.pages.dev"
+    page.goto(origin + "/privacy", wait_until="networkidle")
+    expect(page.locator("#analyticsStatus")).to_contain_text("通常の計測")
+    assert page.evaluate("window['ga-disable-G-V55WPDJV07']") is False
+    assert page.evaluate("dataLayer.length") == 2
+    assert len(google_attempts) == 1
+    page.locator("#analyticsStop").click()
+    expect(page.locator("#analyticsStatus")).to_contain_text("計測を停止しました")
+    assert page.evaluate("localStorage.getItem('ppl-analytics-opt-out')") == "1"
+    page.evaluate("gtag('event','test_must_not_queue')")
+    assert page.evaluate("dataLayer.length") == 2
+    page.screenshot(path=str(OUTPUT / "analytics-preferences-mobile.png"))
+    page.goto(origin + "/", wait_until="networkidle")
+    assert page.evaluate("window['ga-disable-G-V55WPDJV07']") is True
+    assert page.evaluate("dataLayer.length") == 0
+    page.locator("#newPrice").fill("3900")
+    expect(page.locator("#after")).to_have_text("190,000円")
+    assert page.evaluate("dataLayer.length") == 0
+    assert len(google_attempts) == 1, "Opted-out navigation must not request the Google library"
+    page.goto(origin + "/privacy", wait_until="networkidle")
+    expect(page.locator("#analyticsStatus")).to_contain_text("計測を停止する設定")
+    page.locator("#analyticsResume").click()
+    expect(page.locator("#analyticsStatus")).to_contain_text("通常の計測")
+    page.wait_for_load_state("networkidle")
+    assert page.evaluate("localStorage.getItem('ppl-analytics-opt-out')") is None
+    assert page.evaluate("window['ga-disable-G-V55WPDJV07']") is False
+    assert page.evaluate("dataLayer.length") == 2
+    assert len(google_attempts) == 2
+    assert not errors, errors
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
+    context.close()
+    print("PASS analytics preferences: local fixtures at emulated production origin; stop, persistence, calculation, resume; no external requests sent", flush=True)
+
+
 def main():
     OUTPUT.mkdir(exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
@@ -229,6 +290,7 @@ def main():
                 verify_case(browser, base, case)
             verify_article_examples(browser, base)
             verify_product_pages(browser, base)
+            verify_analytics_preferences(browser)
             browser.close()
     finally:
         server.shutdown()
