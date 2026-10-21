@@ -536,7 +536,8 @@ def verify_homepage_entry(browser, base):
             page.goto(base + "/", wait_until="networkidle")
             navigation.locator(f'a[href="{target}"]').click()
             if target.startswith("#"):
-                expect(page.locator("#calculator h2")).to_be_in_viewport()
+                page.wait_for_function("document.querySelector('#calculator').getBoundingClientRect().top >= 0 && document.querySelector('#calculator').getBoundingClientRect().top < 40")
+                expect(page.locator("#oldPrice")).to_be_in_viewport()
                 page.screenshot(path=str(OUTPUT / f"homepage-input-{width}.png"))
             else:
                 expect(page).to_have_url(base + "/" + target)
