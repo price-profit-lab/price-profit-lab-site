@@ -368,6 +368,68 @@ def verify_breadcrumbs(browser, base):
     print("PASS mobile breadcrumbs: current page, parent navigation by keyboard, width and layout", flush=True)
 
 
+def verify_product_selection(browser, base):
+    page = browser.new_page(viewport={"width": 375, "height": 812}, locale="ja-JP")
+    page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+    requests = []
+    page.on("request", lambda request: requests.append(request.url))
+    page.goto(base + "/product.html", wait_until="networkidle")
+    initial_requests = len(requests)
+    box = page.locator("#product-selection")
+    expect(box).to_be_visible()
+    expect(page.locator("#selectionDetails")).to_be_hidden()
+    submit = box.get_by_role("button", name="選び方を確認する", exact=True)
+    submit.click()
+    expect(page.locator("#selectionResult")).to_be_hidden()
+    page.locator("#selectionMethod").select_option("free")
+    submit.click()
+    expect(page.locator("#selectionHeading")).to_have_text("まずは無料ツールから")
+    expect(page.locator("#selectionLink")).to_have_attribute("href", "index.html#tool-choice")
+    page.locator("#selectionMethod").select_option("excel")
+    expect(page.locator("#selectionResult")).to_be_hidden()
+    expect(page.locator("#selectionDetails")).to_be_visible()
+    page.locator("#selectionEnvironment").select_option("pc")
+    for purpose, heading, link in [
+        ("merchandise", "物販向けExcelが用途の候補です｜2,980円", "product-help.html"),
+        ("standard", "サービス業向けStandardが用途の候補です｜1,480円", "service-excel.html"),
+        ("pro", "サービス業向けProが用途の候補です｜2,980円", "service-excel.html"),
+        ("outside", "必要な機能が、このExcelの対象外です", "product.html#check"),
+    ]:
+        page.locator("#selectionPurpose").select_option(purpose)
+        expect(page.locator("#selectionResult")).to_be_hidden()
+        submit.focus()
+        submit.press("Enter")
+        expect(page.locator("#selectionHeading")).to_have_text(heading)
+        expect(page.locator("#selectionHeading")).to_be_focused()
+        expect(page.locator("#selectionLink")).to_have_attribute("href", link)
+        if purpose == "pro":
+            expect(page.locator("#selectionText")).to_contain_text("両方の購入は不要")
+            box.screenshot(path=str(OUTPUT / "product-selection-mobile.png"))
+    page.locator("#selectionPurpose").select_option("standard")
+    for environment in ("unknown", "no"):
+        page.locator("#selectionEnvironment").select_option(environment)
+        submit.click()
+        expect(page.locator("#selectionHeading")).to_have_text("先に利用環境をご確認ください")
+        expect(page.locator("#selectionLink")).to_have_attribute("href", "index.html#tool-choice")
+    assert len(requests) == initial_requests, "Answers must not cause network requests"
+    assert page.url == base + "/product.html", "Answers must not be added to the URL"
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
+    box.get_by_role("button", name="回答をリセット").click()
+    expect(page.locator("#selectionMethod")).to_have_value("")
+    expect(page.locator("#selectionMethod")).to_be_focused()
+    expect(page.locator("#selectionResult")).to_be_hidden()
+    expect(page.locator("#selectionDetails")).to_be_hidden()
+    page.close()
+    context = browser.new_context(java_script_enabled=False)
+    context.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+    page = context.new_page()
+    page.goto(base + "/product.html")
+    expect(page.locator("#product-selection")).to_be_hidden()
+    expect(page.get_by_role("table", name="目的に合わせた3商品の比較")).to_be_visible()
+    context.close()
+    print("PASS product selection: free/3 products/out-of-scope/no-Excel/unknown, no stale result, keyboard/reset/mobile, no network or URL answers, no-JS table", flush=True)
+
+
 def main():
     OUTPUT.mkdir(exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
@@ -378,6 +440,7 @@ def main():
             browser = playwright.chromium.launch()
             for case in CASES:
                 verify_case(browser, base, case)
+            verify_product_selection(browser, base)
             verify_breadcrumbs(browser, base)
             verify_reverse_price_boundary(browser, base)
             verify_guide_finder(browser, base)

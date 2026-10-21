@@ -64,3 +64,11 @@ a.secondary-button{display:inline-block;text-decoration:none}
 .breadcrumb li{min-width:0;overflow-wrap:anywhere}
 .breadcrumb li+li::before{content:'›';margin-right:10px;color:#66796e}
 .breadcrumb [aria-current="page"]{color:#20352f}
+
+#product-selection[hidden],#selectionDetails[hidden],#selectionResult[hidden]{display:none!important}
+#product-selection select{display:block;width:100%;min-width:0;padding:12px;border:1px solid #a6b9ad;border-radius:8px;font:inherit;font-size:16px;background:#fff;color:#17382b;margin:6px 0 16px}
+#product-selection select:focus-visible,#selectionHeading:focus{outline:3px solid #d39432;outline-offset:3px}
+.selection-result{background:#fff;border:1px solid #a6b9ad;border-radius:10px;padding:16px;scroll-margin-top:16px}
+.selection-result h3{margin-top:0}
+
+#selectionForm>p{display:flex;flex-wrap:wrap;gap:8px}

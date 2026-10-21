@@ -27,6 +27,7 @@ on:
       - 'cancellation-calculator.js'
       - 'style.css'
       - 'product.html'
+      - 'product-selection.js'
       - 'service-excel.html'
       - 'product-help.html'
       - 'service-excel-help.html'
