@@ -68,3 +68,49 @@ nodes['cancel-cancellation'].value='100';nodes['cancel-cancellation'].events.inp
 assert.deepEqual(rows().at(-1),['100％（入力中）','0件','-50,000円','-257,600円']);
 console.log('Cancellation model, boundaries, invalid input, scenarios, warning and reset checks passed');
 
+function exampleDocument(hash){
+ const nodes={};
+ for(const [key,value] of Object.entries(sample))nodes['cancel-'+key]=element(String(value));
+ for(const id of ['cancellationForm','cancellationError','cancellationResult','cancellationWarning','cancellationReset','cancellationScenarios','cancellationExamples','cancellationExampleStatus',
+  'example-capacity-80','example-capacity-64','example-capacity-48',
+  ...['baseline','profit','profitChange','lostSales','margin','completed','cancelled'].map(k=>'cancel-result-'+k)])nodes[id]=element();
+ nodes.cancellationExamples.hidden=true;
+ const doc={defaultView:{location:{hash,search:'?price=1&bookings=999999'}},getElementById:id=>nodes[id],createElement:()=>element()};
+ return {doc,nodes};
+}
+const events=[];
+const originalGtag=globalThis.gtag;
+globalThis.gtag=(...args)=>events.push(args);
+try{
+ for(const [id,price,bookings,profit] of [
+  ['example-capacity-80','6261','80','200,068.24円'],
+  ['example-capacity-64','7155','64','200,004.16円'],
+  ['example-capacity-48','8647','48','200,023.89円']
+ ]){
+  const {doc,nodes}=exampleDocument('#'+id);
+  events.length=0;initCancellationCalculator(doc);
+  assert.equal(nodes['cancel-price'].value,price);assert.equal(nodes['cancel-bookings'].value,bookings);
+  assert.equal(nodes['cancel-result-profit'].textContent,profit);
+  assert.equal(nodes.cancellationExamples.hidden,false);
+  assert.match(nodes.cancellationExampleStatus.textContent,/架空例を入力しました/);
+  assert.equal(events.length,0,'Loading a public example is not user interaction');
+  nodes['cancel-cost'].value='1';nodes['cancel-cost'].events.input();
+  nodes['example-capacity-64'].events.click();
+  assert.equal(nodes['cancel-cost'].value,'2600','Switching samples restores every shared condition');
+  assert.equal(nodes['cancel-result-profit'].textContent,'200,004.16円');
+  assert.deepEqual(events,[['event','cancellation_calculator_interaction']],'Interaction contains no values and is counted once');
+  nodes.cancellationReset.events.click();
+  assert.equal(nodes['cancel-price'].value,'6000');assert.equal(nodes['cancel-bookings'].value,'80');
+  assert.equal(nodes['cancel-result-profit'].textContent,'181,840円');
+  assert.equal(nodes.cancellationExampleStatus.textContent,'基本サンプルに戻しました。');
+ }
+ for(const hash of ['','#__proto__','#constructor','#unknown','#example-capacity-80&price=1','#price=1']){
+  const {doc,nodes}=exampleDocument(hash);events.length=0;initCancellationCalculator(doc);
+  assert.equal(nodes['cancel-price'].value,'6000');assert.equal(nodes['cancel-result-profit'].textContent,'181,840円');
+  assert.equal(nodes.cancellationExampleStatus.textContent,'');assert.equal(events.length,0);
+ }
+}finally{
+ if(originalGtag===undefined)delete globalThis.gtag;else globalThis.gtag=originalGtag;
+}
+console.log('Fixed article examples, ignored URL amounts, edit/switch/reset and analytics privacy checks passed');
+
