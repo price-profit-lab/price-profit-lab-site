@@ -6,6 +6,11 @@
   if(!anchor||typeof gtag!=='function')return;
   const href=anchor.getAttribute('href')||'';
   const page=typeof location!=='undefined'?location.pathname:'unknown';
+  // Count opening the known demo from the product page; never send its URL or query.
+  if((page==='/service-excel'||page==='/service-excel.html')&&/^(?:\.\/)?assets\/service-excel-demo(?:\.html)?(?:[#?].*)?$/.test(href)){
+   gtag('event','service_excel_demo_click',{source_page:page});
+   return;
+  }
   // Classify only the two known local help pages. Never send href/query/form data.
   const help=/^(?:\.\/)?(product-help|service-excel-help)(?:\.html)?(?:[#?].*)?$/.exec(href);
   if(help){
