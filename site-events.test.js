@@ -233,3 +233,18 @@ for(const event of presetEvents){
 }
 console.log('Article example links retain free-tool navigation measurement');
 
+const beforeMargin=events.length;
+for(const href of ['profit-margin-calculator.html','profit-margin-calculator','./profit-margin-calculator.html?amount=secret'])click(href);
+assert.equal(events.length,beforeMargin+3);
+for(const event of events.slice(beforeMargin)){
+ assert.equal(event[1],'free_tool_navigation');assert.equal(event[2].tool,'profit-margin-calculator');
+ assert.deepEqual(Object.keys(event[2]),['source_page','tool']);
+}
+click('profit-margin-calculator-copy.html');click('https://example.com/profit-margin-calculator.html');
+assert.equal(events.length,beforeMargin+3);
+const marginSelf=[];const marginListeners={};
+vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),{document:{addEventListener(k,f){marginListeners[k]=f}},location:{pathname:'/profit-margin-calculator'},gtag:(...args)=>marginSelf.push(args)});
+marginListeners.click({target:{closest(){return {getAttribute(){return 'profit-margin-calculator.html'}}}}});
+assert.equal(marginSelf.length,0);
+console.log('Margin tool navigation, query privacy and self-link exclusion passed');
+
