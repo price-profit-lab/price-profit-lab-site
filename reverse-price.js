@@ -1,4 +1,23 @@
 'use strict';
+// Preserve decimal input values when deciding whether a whole extra yen is needed.
+function decimalParts(value){
+ const [mantissa,exponent='0']=value.toString().split('e');
+ const [whole,fraction='']=mantissa.split('.');
+ return {coefficient:BigInt(whole+fraction),power:Number(exponent)-fraction.length};
+}
+function minimumWholeYen({target,fixedCost,quantity,unitCost,flatFee,rate}){
+ const money=[target,fixedCost,unitCost,flatFee].map(decimalParts);
+ const places=Math.max(0,...money.map(value=>-value.power));
+ const scale=10n**BigInt(places);
+ const [goal,fixed,cost,flat]=money.map(value=>value.coefficient*10n**BigInt(value.power+places));
+ const fee=decimalParts(rate),feePlaces=Math.max(0,-fee.power);
+ const feeScale=10n**BigInt(feePlaces);
+ const feeUnits=fee.coefficient*10n**BigInt(fee.power+feePlaces);
+ const count=BigInt(quantity);
+ const numerator=(goal+fixed+(cost+flat)*count)*100n*feeScale;
+ const denominator=count*scale*(100n*feeScale-feeUnits);
+ return (numerator+denominator-1n)/denominator;
+}
 // Reverse-pricing calculation; values are yen, quantities and percentages.
 function reversePrice(v){
  const {target,fixedCost,quantity,unitCost,flatFee,rate}=v;
@@ -7,7 +26,7 @@ function reversePrice(v){
     !Number.isInteger(quantity)||rate<0||rate>=100)return null;
  const exact=((target+fixedCost)/quantity+unitCost+flatFee)/(1-rate/100);
  if(!Number.isFinite(exact)||exact<0)return null;
- const price=Math.ceil(exact);
+ const price=Number(minimumWholeYen(v));
  if(!Number.isSafeInteger(price))return null;
  const monthlyProfit=(price*(1-rate/100)-unitCost-flatFee)*quantity-fixedCost;
  if(!Number.isFinite(monthlyProfit))return null;

@@ -76,5 +76,14 @@ assert.equal(elements.reverseResult.hidden,true);
 elements.reverseReset.listeners.click();
 assert.equal(elements.reversePrice.textContent,'3,411円');
 assert.equal(events.length,1,'Error correction must not duplicate analytics events');
+for(const [id,value] of Object.entries({target:'0',fixedCost:'0',quantity:'1',unitCost:'700',flatFee:'0',rate:'30'}))elements[id].value=value;
+form.listeners.input();
+assert.equal(elements.reversePrice.textContent,'1,000円','Whole-yen boundary must display without an extra yen');
+assert.equal(elements.reverseProfit.textContent,'0円');
+for(const row of elements.reverseScenarios.children)assert.equal(row.children[2].textContent,'1,000円');
+elements.unitCost.value='700.0000000000001';form.listeners.input();
+assert.equal(elements.reversePrice.textContent,'1,001円','A real fraction above the boundary must still round up');
+elements.reverseReset.listeners.click();
+assert.equal(elements.reversePrice.textContent,'3,411円');
 console.log('Reverse calculator DOM and event tests passed');
 
