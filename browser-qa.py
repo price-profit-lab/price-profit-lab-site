@@ -225,6 +225,7 @@ def verify_product_pages(browser, base):
                 expect(wrapper).to_be_focused()
                 if width == 375:
                     assert wrapper.evaluate("el=>el.scrollWidth>el.clientWidth"), "Comparison must keep readable columns on mobile"
+                    assert wrapper.locator("thead th").first.evaluate("el=>el.getBoundingClientRect().width<190"), "Row-label column must leave room for values on mobile"
                     wrapper.evaluate("el=>el.scrollTo({left:0,behavior:'instant'})")
                     wrapper.press("ArrowRight")
                     page.wait_for_function("document.activeElement.scrollLeft>0")
