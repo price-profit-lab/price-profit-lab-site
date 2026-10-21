@@ -102,6 +102,36 @@ def verify_case(browser, base, case):
     page.close()
 
 
+def verify_article_examples(browser, base):
+    page = browser.new_page(viewport={"width": 375, "height": 812}, locale="ja-JP")
+    errors = []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+    for article, example, price, quantity, profit in [
+        ("discount-profit-guide", "example-discount", "2700", "128", "101,200円"),
+        ("online-shop-profit-guide", "example-shop", "3300", "85", "102,575円"),
+    ]:
+        page.goto(base + "/" + article + ".html", wait_until="networkidle")
+        page.locator('a[href="index.html#' + example + '"]').click()
+        expect(page).to_have_url(base + "/index.html#" + example)
+        expect(page.locator("#newPrice")).to_have_value(price)
+        expect(page.locator("#newCount")).to_have_value(quantity)
+        expect(page.locator("#after")).to_have_text(profit)
+        expect(page.locator("#exampleStatus")).to_contain_text("架空例を入力しました")
+        expect(page.locator("#" + example)).to_be_in_viewport()
+        expect(page.locator("#oldPrice")).to_be_in_viewport()
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Preset buttons must fit on mobile"
+        page.screenshot(path=str(OUTPUT / (example + "-mobile.png")))
+        page.locator("#example-discount").click()
+        expect(page.locator("#after")).to_have_text("101,200円")
+        page.locator("#resetSample").click()
+        expect(page.locator("#after")).to_have_text("136,000円")
+        expect(page.locator("#unitCost")).to_have_value("900")
+        print(f"PASS {article}: article link loads fixed sample, mobile layout, sample switching and reset", flush=True)
+    assert not errors, errors
+    page.close()
+
+
 def verify_product_pages(browser, base):
     products = [
         ("product", "product-help", {"9001298"}),
@@ -170,6 +200,7 @@ def main():
             browser = playwright.chromium.launch()
             for case in CASES:
                 verify_case(browser, base, case)
+            verify_article_examples(browser, base)
             verify_product_pages(browser, base)
             browser.close()
     finally:
