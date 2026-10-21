@@ -27,6 +27,22 @@ function sharingMetadataIssue(html,canonical){
  }
  const cards=tags.filter(attrs=>attrs.name==='twitter:card');
  if(cards.length!==1||!['summary','summary_large_image'].includes(cards[0].content))return 'invalid or duplicate twitter:card';
+ if(cards[0].content==='summary_large_image'){
+  const image=tags.filter(attrs=>attrs.property==='og:image');
+  if(image.length!==1||!/^https:\/\//.test(image[0].content||''))return 'invalid or duplicate og:image';
+  const required={
+   'og:image:width':value=>value==='1200',
+   'og:image:height':value=>value==='630',
+   'og:image:type':value=>value==='image/png',
+   'og:image:alt':value=>value.trim().length>0,
+   'twitter:image':value=>value===image[0].content,
+   'twitter:image:alt':value=>value.trim().length>0
+  };
+  for(const [key,valid] of Object.entries(required)){
+   const matches=tags.filter(attrs=>(key.startsWith('twitter:')?attrs.name:attrs.property)===key);
+   if(matches.length!==1||typeof matches[0].content!=='string'||!valid(matches[0].content))return 'invalid or duplicate '+key;
+  }
+ }
  return null;
 }
 const sampleCanonical='https://price-profit-lab.pages.dev/example';
@@ -47,6 +63,30 @@ assert.ok(sharingMetadataIssue(sharingFixture.replace('content="Description"','c
 assert.ok(sharingMetadataIssue(sharingFixture.replace(sampleCanonical,'https://example.com/wrong'),sampleCanonical),'Reject wrong sharing URL');
 assert.ok(sharingMetadataIssue(sharingFixture.replace('content="summary"','content="unsupported"'),sampleCanonical),'Reject invalid card type');
 console.log('Sharing metadata omission, duplicate and false-positive checks passed');
+
+const shareImage='https://price-profit-lab.pages.dev/assets/free-tools-share.png';
+const shareAlt='無料の価格・利益計算ツール5つ';
+const largeFixture=sharingFixture.replace('content="summary"','content="summary_large_image"').replace('</head>',
+ '<meta property="og:image" content="'+shareImage+'"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:type" content="image/png"><meta property="og:image:alt" content="'+shareAlt+'"><meta name="twitter:image" content="'+shareImage+'"><meta name="twitter:image:alt" content="'+shareAlt+'"></head>');
+assert.equal(sharingMetadataIssue(largeFixture,sampleCanonical),null);
+assert.ok(sharingMetadataIssue(sharingFixture.replace('content="summary"','content="summary_large_image"'),sampleCanonical),'Large cards require image metadata');
+for(const key of ['og:image','og:image:width','og:image:height','og:image:type','og:image:alt','twitter:image','twitter:image:alt']){
+ const tag=largeFixture.match(new RegExp('<meta\\b[^>]*(?:property|name)="'+key+'"[^>]*>'))[0];
+ for(const altered of [largeFixture.replace(tag,''),largeFixture.replace(tag,tag+tag),largeFixture.replace(tag,'<!-- '+tag+' -->')]){
+  assert.ok(sharingMetadataIssue(altered,sampleCanonical),'Reject incomplete/duplicate/hidden image field: '+key);
+ }
+}
+assert.ok(sharingMetadataIssue(largeFixture.replace('content="'+shareImage+'"','content="http://example.com/image.png"'),sampleCanonical),'Image must use HTTPS');
+const sharePng=fs.readFileSync('assets/free-tools-share.png');
+assert.equal(sharePng.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+assert.equal(sharePng.readUInt32BE(16),1200);assert.equal(sharePng.readUInt32BE(20),630);
+for(const file of ['index.html','reverse-price-calculator.html','price-increase-calculator.html','cancellation-calculator.html','profit-margin-calculator.html','share.html']){
+ const html=fs.readFileSync(file,'utf8');
+ assert.ok(html.includes('<meta name="twitter:card" content="summary_large_image">'),file+' requires a large share card');
+ assert.ok(html.includes('<meta property="og:image" content="'+shareImage+'">'),file+' must reference the published preview');
+}
+console.log('Shared image metadata, actual PNG dimensions and six-page coverage passed');
+
 
 const files=fs.readdirSync('.').filter(f=>f.endsWith('.html'));
 const sitemap=fs.readFileSync('sitemap.xml','utf8');

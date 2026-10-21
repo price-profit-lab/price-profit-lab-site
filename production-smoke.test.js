@@ -159,7 +159,7 @@ async function checkOnce(){
  const assets=['/analytics.js','/analytics-settings.js','/calculator-navigation.js','/profit-margin.js','/cancellation-calculator.js','/calculator.js','/reverse-price.js','/price-increase-calculator.js','/site-events.js','/guides-filter.js','/product-selection.js','/style.css'];
  // Include the English calculator even though it is not in the Japanese sitemap.
  const pages=[...new Set([...paths,'/en/'])];
- const images=['/assets/service-standard-excel-mac.png','/assets/service-pro-actions-excel-mac.png'];
+ const images=['/assets/service-standard-excel-mac.png','/assets/service-pro-actions-excel-mac.png','/assets/free-tools-share.png'];
  const checks=[...pages,'/robots.txt',...assets,...images];
  for(let offset=0;offset<checks.length;offset+=6){
   await Promise.all(checks.slice(offset,offset+6).map(async path=>{
