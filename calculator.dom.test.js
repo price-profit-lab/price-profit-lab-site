@@ -67,11 +67,13 @@ function examplePage(hash){
  for(const [id,source] of Object.entries(elements))els[id]={...source,value:defaults[id]||'',defaultValue:defaults[id]||'',textContent:'',hidden:false,listeners:{},children:[],attributes:{}};
  for(const id of ['example-shop','example-discount','exampleStatus'])els[id]={...els.error,id,listeners:{},children:[],attributes:{}};
  const calls=[];
+ const scrolls=[];
+ els.calculator={scrollIntoView:options=>scrolls.push(options)};
  vm.runInNewContext(fs.readFileSync('calculator.js','utf8'),{
   document:{getElementById:id=>els[id]||null,createElement:document.createElement},
   location:{hash},gtag:(...args)=>calls.push(args),module:{exports:{}}
  });
- return {els,calls};
+ return {els,calls,scrolls};
 }
 const discount=examplePage('#example-discount');
 assert.equal(discount.els.newPrice.value,'2700');
@@ -80,6 +82,8 @@ assert.equal(discount.els.before.textContent,'101,000円');
 assert.equal(discount.els.after.textContent,'101,200円');
 assert.equal(discount.els.needed.textContent,'128件');
 assert.equal(discount.calls.length,0,'Opening an article example is not manual calculator interaction');
+assert.equal(discount.scrolls.length,1,'Article examples open at the calculator');
+assert.equal(discount.scrolls[0].behavior,'instant','Entry must not wait for smooth scrolling');
 discount.els.oldCount.value='1.5';discount.els.oldCount.listeners.input();
 assert.equal(discount.els.results.hidden,true);
 discount.els['example-shop'].listeners.click();
@@ -103,6 +107,7 @@ for(const hash of ['#unknown','#constructor','#example-discount?newPrice=1']){
  const unknown=examplePage(hash);
  assert.equal(unknown.els.newPrice.value,'3300','Only exact allowlisted sample labels can set inputs');
  assert.equal(unknown.els.after.textContent,'136,000円');
+ assert.equal(unknown.scrolls.length,0,'Other fragments keep normal navigation');
 }
 console.log('Article presets, valid input recovery, reset and event privacy checks passed');
 

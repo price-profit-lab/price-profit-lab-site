@@ -118,6 +118,8 @@ def verify_article_examples(browser, base):
         expect(page.locator("#newCount")).to_have_value(quantity)
         expect(page.locator("#after")).to_have_text(profit)
         expect(page.locator("#exampleStatus")).to_contain_text("架空例を入力しました")
+        expect(page.locator("#" + example)).to_be_in_viewport()
+        expect(page.locator("#oldPrice")).to_be_in_viewport()
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Preset buttons must fit on mobile"
         page.screenshot(path=str(OUTPUT / (example + "-mobile.png")))
         page.locator("#example-discount").click()

@@ -55,7 +55,14 @@ if(typeof document!=='undefined'&&$('oldPrice')){
  const reset=$('resetSample');if(reset)reset.addEventListener('click',()=>{for(const f of fields)$(f).value=$(f).defaultValue;if($('exampleStatus'))$('exampleStatus').textContent='基本サンプルに戻しました。';update();});
  update();
  // Only fixed, public example labels are accepted; never read amounts from URLs.
- if(typeof location!=='undefined')setExample(location.hash.slice(1),false);
+ if(typeof location!=='undefined'){
+  const id=location.hash.slice(1);
+  if(Object.hasOwn(examples,id)){
+   setExample(id,false);
+   const calculator=$('calculator');
+   if(calculator)calculator.scrollIntoView({behavior:'instant',block:'start'});
+  }
+ }
 }
 if(typeof module!=='undefined')module.exports={calc};
 
