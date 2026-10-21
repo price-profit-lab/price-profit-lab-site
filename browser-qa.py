@@ -199,6 +199,15 @@ def verify_product_pages(browser, base):
         for product, guide, item_ids in products:
             page.goto(base + "/" + product + ".html", wait_until="networkidle")
             expect(page.locator("h1")).to_be_visible()
+            if product == "service-excel":
+                expect(page.locator("h1")).to_contain_text("料金設定をExcelで比較")
+                expect(page.get_by_text("Standard 1,480円／Pro 2,980円（税込・買い切り）", exact=True)).to_be_in_viewport()
+                page.locator('.hero a[href="#environment"]').click()
+                expect(page.locator("#environment")).to_be_in_viewport()
+                expect(page.get_by_text("Windows版Excel、ブラウザー版Excel、Googleスプレッドシート、Numbersは動作未確認です。", exact=True)).to_be_visible()
+                page.goto(base + "/" + product + ".html", wait_until="networkidle")
+                page.locator('.hero a[href="#plans"]').click()
+                expect(page.locator("#plans h2")).to_be_in_viewport()
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), (product, width, "page overflows viewport")
             purchase = page.locator('a[href^="https://price-profit-lab.booth.pm/items/"]')
             links = purchase.evaluate_all("els=>els.map(el=>el.getAttribute('href'))")
