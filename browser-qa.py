@@ -126,6 +126,16 @@ def verify_case(browser, base, case):
     if case["name"] == "cancellation":
         expect(page.locator("#cancellationScenarios tr")).to_have_count(4)
         expect(page.locator("#cancel-cancellation")).to_have_value("10")
+    if case["name"] == "profit":
+        page.set_viewport_size({"width": 375, "height": 812})
+        for field, value in dict(oldPrice="1.00000000001", newPrice="1", unitCost="0", oldCount="1", newCount="1", fixedCost="1.00000000001", rate="0", flatFee="0", target="1.00000000001", hours="0").items():
+            page.locator("#" + field).fill(value)
+        for field, value in dict(needed="2件", breakeven="2件", goal="3件").items():
+            expect(page.locator("#" + field)).to_have_text(value)
+        expect(page.locator("#results")).to_be_visible()
+        page.locator("#resetSample").click()
+        expect(page.locator("#needed")).to_have_text("88件")
+        expect(page.locator("#after")).to_have_text("136,000円")
     assert not errors, errors
     print(f"PASS {case['name']}: edited input/result, print handler, print CSS, PDF text ({len(reader.pages)} pages), invalid hiding, result/error focus navigation and reset", flush=True)
     page.close()

@@ -3,17 +3,31 @@
 const $=id=>document.getElementById(id);
 const yen=n=>Number.isFinite(n)?Math.round(n).toLocaleString('ja-JP')+'円':'算出不可';
 const count=n=>Number.isFinite(n)?Math.ceil(n).toLocaleString('ja-JP')+'件':'算出不可';
+// Use the decimal input values for whole-sale decisions, without an epsilon.
+function requiredSales(v){
+ const parts=value=>{const [m,e='0']=value.toString().split('e');const [w,f='']=m.split('.');return {n:BigInt(w+f),p:Number(e)-f.length};};
+ const values=[v.oldPrice,v.newPrice,v.unitCost,v.flatFee,v.fixedCost,v.target].map(parts);
+ const places=Math.max(0,...values.map(x=>-x.p));
+ const [oldPrice,newPrice,cost,flat,fixed,target]=values.map(x=>x.n*10n**BigInt(x.p+places));
+ const fee=parts(v.rate),feePlaces=Math.max(0,-fee.p);
+ const hundred=100n*10n**BigInt(feePlaces);
+ const remaining=hundred-fee.n*10n**BigInt(fee.p+feePlaces);
+ const margin=price=>price*remaining-(cost+flat)*hundred;
+ const newMargin=margin(newPrice);
+ const required=n=>{
+  if(n<=0n)return 0;
+  if(newMargin<=0n)return NaN;
+  const quantity=Number((n+newMargin-1n)/newMargin);
+  return Number.isSafeInteger(quantity)?quantity:NaN;
+ };
+ return {needed:required(margin(oldPrice)*BigInt(v.oldCount)),breakeven:required(fixed*hundred),goal:required((target+fixed)*hundred)};
+}
 function calc(v){
  const {oldPrice,newPrice,unitCost,oldCount,newCount,fixedCost,rate,flatFee,target,hours}=v;
  const oldMargin=oldPrice-unitCost-oldPrice*rate/100-flatFee;
  const newMargin=newPrice-unitCost-newPrice*rate/100-flatFee;
  const before=oldMargin*oldCount-fixedCost,after=newMargin*newCount-fixedCost;
- // When zero sales already meet the target, the required quantity is zero,
- // even if the per-sale contribution margin is zero or negative.
- const required=(profit)=>profit<=-fixedCost?0:(newMargin>0?Math.max(0,Math.ceil((profit+fixedCost)/newMargin-1e-10)):NaN);
- const needed=required(before);
- const breakeven=required(0);
- const goal=required(target);
+ const {needed,breakeven,goal}=requiredSales(v);
  return {before,after,diff:after-before,needed,breakeven,goal,hourly:hours>0?after/hours:NaN,oldMargin,newMargin};
 }
 const fields=['oldPrice','newPrice','unitCost','oldCount','newCount','fixedCost','rate','flatFee','target','hours'];

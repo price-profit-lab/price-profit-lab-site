@@ -111,3 +111,15 @@ for(const hash of ['#unknown','#constructor','#example-discount?newPrice=1']){
 }
 console.log('Article presets, valid input recovery, reset and event privacy checks passed');
 
+const boundary=examplePage('');
+for(const [id,value] of Object.entries({oldPrice:'1.00000000001',newPrice:'1',unitCost:'0',oldCount:'1',newCount:'1',fixedCost:'1.00000000001',rate:'0',flatFee:'0',target:'1.00000000001',hours:'0'}))boundary.els[id].value=value;
+boundary.els.target.listeners.input();
+assert.equal(boundary.els.needed.textContent,'2件');
+assert.equal(boundary.els.breakeven.textContent,'2件');
+assert.equal(boundary.els.goal.textContent,'3件');
+assert.equal(boundary.els.results.hidden,false);
+boundary.els.resetSample.listeners.click();
+assert.equal(boundary.els.needed.textContent,'88件');
+assert.equal(boundary.calls.length,1);
+console.log('Whole-sale boundaries render correctly and reset without duplicate events');
+
