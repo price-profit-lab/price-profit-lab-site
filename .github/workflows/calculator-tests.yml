@@ -6,6 +6,7 @@ on:
       - 'cancellation-calculator.js'
       - 'cancellation-calculator.test.js'
       - 'calculator.js'
+      - 'test-calculator*.js'
       - 'calculator.test.js'
       - 'calculator.dom.test.js'
       - 'reverse-price.js'
@@ -30,6 +31,7 @@ on:
       - 'cancellation-calculator.js'
       - 'cancellation-calculator.test.js'
       - 'calculator.js'
+      - 'test-calculator*.js'
       - 'calculator.test.js'
       - 'calculator.dom.test.js'
       - 'reverse-price.js'
@@ -46,15 +48,21 @@ on:
       - 'sitemap.xml'
       - '**/*.html'
       - '.github/workflows/calculator-tests.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate calculator syntax and legacy regression cases
+        run: node --check calculator.js && node test-calculator.js && node test-calculator-ui.js
       - name: Test profit calculation and boundary cases
         run: node en/index.test.js && node cancellation-calculator.test.js && node calculator.test.js && node calculator.dom.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-events.test.js && node price-increase-calculator.test.js && node production-smoke.unit.test.js && node site-audit.test.js
