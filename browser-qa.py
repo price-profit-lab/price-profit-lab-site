@@ -167,6 +167,21 @@ def verify_article_examples(browser, base):
         expect(page.locator("#after")).to_have_text("136,000円")
         expect(page.locator("#unitCost")).to_have_value("900")
         print(f"PASS {article}: article link loads fixed sample, mobile layout, sample switching and reset", flush=True)
+    page.goto(base + "/profit-margin-guide.html", wait_until="networkidle")
+    page.locator('a[href="discount-profit-guide.html#margin-discount-table"]').click()
+    expect(page.locator("#margin-discount-table")).to_be_in_viewport()
+    table = page.locator("#discount-count-table")
+    expect(table.locator("tbody tr")).to_have_count(5)
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Discount table must not overflow the mobile page"
+    table.locator("..").screenshot(path=str(OUTPUT / "discount-count-table-mobile.png"))
+    table.locator("..").focus()
+    expect(table.locator("..")).to_be_focused()
+    table.locator("..").press("ArrowRight")
+    page.wait_for_function("document.querySelector('#discount-count-table').parentElement.scrollLeft > 0")
+    page.set_viewport_size({"width": 1280, "height": 900})
+    page.locator("#margin-discount-table").scroll_into_view_if_needed()
+    table.locator("..").screenshot(path=str(OUTPUT / "discount-count-table-desktop.png"))
+    print("PASS discount reference table: related-article entry, mobile width, keyboard scroll region and desktop layout", flush=True)
     assert not errors, errors
     page.close()
 

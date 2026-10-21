@@ -1,15 +1,15 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>10％値引きで利益を保つには何個必要？クーポン・セールの利益計算</title>
-<meta name="description" content="10％値引きして売上が増えても利益は減る？販売手数料と原価を含め、同じ利益を保つ販売数を計算。全品値引きと一部クーポンの違い、無料ツールの入力例を解説します。">
+<meta name="description" content="10％値引きしたら何個多く売れば同じ利益を保てる？利益率別の必要販売数早見表と、原価・手数料を含む計算例を掲載。全品値引きと一部クーポンの違い、無料ツールの入力例も解説します。">
 <link rel="canonical" href="https://price-profit-lab.pages.dev/discount-profit-guide"><link rel="stylesheet" href="style.css">
 <script src="analytics.js"></script>
-<meta property="og:type" content="article"><meta property="og:locale" content="ja_JP"><meta property="og:site_name" content="価格と利益の計算室"><meta property="og:title" content="10％値引きで利益を保つには何個必要？"><meta property="og:description" content="原価と手数料を含めて、値引き後の利益維持に必要な販売数を計算。クーポンの対象と追加費用も分けて考えます。"><meta property="og:url" content="https://price-profit-lab.pages.dev/discount-profit-guide"><meta name="twitter:card" content="summary"><script type="application/ld+json" data-breadcrumb-schema>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"ホーム","item":"https://price-profit-lab.pages.dev/"},{"@type":"ListItem","position":2,"name":"解説記事","item":"https://price-profit-lab.pages.dev/guides"},{"@type":"ListItem","position":3,"name":"10％値引きしたら、何個多く売れば利益を保てる？","item":"https://price-profit-lab.pages.dev/discount-profit-guide"}]}</script></head>
+<meta property="og:type" content="article"><meta property="og:locale" content="ja_JP"><meta property="og:site_name" content="価格と利益の計算室"><meta property="og:title" content="10％値引きで利益を保つには何個必要？"><meta property="og:description" content="利益率別の必要販売数早見表と、原価・手数料を含む値引きの計算例。クーポンと追加費用も分けて考えます。"><meta property="og:url" content="https://price-profit-lab.pages.dev/discount-profit-guide"><meta name="twitter:card" content="summary"><script type="application/ld+json" data-breadcrumb-schema>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"ホーム","item":"https://price-profit-lab.pages.dev/"},{"@type":"ListItem","position":2,"name":"解説記事","item":"https://price-profit-lab.pages.dev/guides"},{"@type":"ListItem","position":3,"name":"10％値引きしたら、何個多く売れば利益を保てる？","item":"https://price-profit-lab.pages.dev/discount-profit-guide"}]}</script></head>
 <body><header><a href="index.html"><b>価格と利益の計算室</b></a><nav><a href="index.html#calculator">無料利益計算</a><a href="guides.html">解説記事</a><a href="product.html">Excel版</a></nav></header>
 <main><nav class="breadcrumb" aria-label="現在位置"><ol><li><a href="index.html">ホーム</a></li><li><a href="guides.html">解説記事</a></li><li><span aria-current="page">10％値引きしたら、何個多く売れば利益を保てる？</span></li></ol></nav><article class="panel"><h1>10％値引きしたら、何個多く売れば利益を保てる？</h1>
 <p>セールで売れる数が増えても、値引き前より利益が減る場合があります。10％値引きした分を「販売数10％増」で取り戻せるとは限りません。材料費や梱包費は、価格を下げても同じだけかかるためです。</p>
 <p>この記事では、<strong>値引き後も現在と同じ利益を残すために必要な販売数</strong>を、架空のネット販売の例で計算します。値引きで何個売れるかを予測する記事ではありません。</p>
-<nav class="product-toc" aria-label="この記事の目次"><strong>確認したい内容へ</strong><a href="#example">10％値引きの例</a><a href="#rates">値引き率別の比較</a><a href="#coupon">一部だけクーポンを使う場合</a><a href="#tool">無料ツールの入力例</a></nav>
+<nav class="product-toc" aria-label="この記事の目次"><strong>確認したい内容へ</strong><a href="#example">10％値引きの例</a><a href="#rates">値引き率別の比較</a><a href="#margin-discount-table">利益率別の早見表</a><a href="#coupon">一部だけクーポンを使う場合</a><a href="#tool">無料ツールの入力例</a></nav>
 <h2>まずは「1個売れたときに残る金額」を確認する</h2>
 <p>固定費を引く前に、販売価格から1個ごとの原価・販売手数料を引いた金額を計算します。ここでは、この金額を1個あたりの限界利益と呼びます。</p>
 <div class="metric"><strong>1個あたりの限界利益＝販売価格×（1−手数料率）−1個あたり変動費−定額手数料</strong></div>
@@ -32,6 +32,22 @@
 <tr><td>0％</td><td>3,000円</td><td>1,310円</td><td>100個</td><td>0個</td></tr><tr><td>5％</td><td>2,850円</td><td>1,167.5円</td><td>113個</td><td>＋13個</td></tr><tr><td>10％</td><td>2,700円</td><td>1,025円</td><td>128個</td><td>＋28個</td></tr><tr><td>20％</td><td>2,400円</td><td>740円</td><td>178個</td><td>＋78個</td></tr>
 </tbody></table></div>
 <p>表は手数料の円未満処理を行わない概算です。実際には販売サイトの端数処理や決済対象額を確認してください。販売数が増えると作業時間や発送件数も増えるため、必要数を受けられるかも合わせて考えます。</p>
+<h2 id="margin-discount-table">利益率別の早見表：元の100個と同じ利益に何個必要？</h2>
+<p>同じ10％値引きでも、元の1個あたり利益が小さいほど必要販売数は大きく増えます。以下は<strong>販売手数料なし・1個あたり変動費と月間固定費が変わらない・対象の1商品をすべて同じ率で値引き</strong>する仮定です。表の「元の利益率」は、値引き前の<strong>限界利益÷販売価格</strong>。原価以外の変動費がない場合は粗利率と同じですが、固定費を引いた月間利益率とは異なります。</p>
+<p class="note">スマホでは表を横にスクロールして確認できます。</p>
+<div class="tablewrap" role="region" aria-label="利益率別の値引き早見表（横にスクロールできます）" tabindex="0"><table id="discount-count-table" style="min-width:460px"><caption>元の100個と同じ利益を保つ最低販売数（整数へ切り上げ）</caption><thead><tr><th scope="col">元の利益率</th><th scope="col">5％引き</th><th scope="col">10％引き</th><th scope="col">20％引き</th><th scope="col">30％引き</th></tr></thead><tbody>
+<tr><th scope="row">20％</th><td>134個</td><td>200個</td><td>到達不可</td><td>到達不可</td></tr>
+<tr><th scope="row">30％</th><td>120個</td><td>150個</td><td>300個</td><td>到達不可</td></tr>
+<tr><th scope="row">40％</th><td>115個</td><td>134個</td><td>200個</td><td>400個</td></tr>
+<tr><th scope="row">50％</th><td>112個</td><td>125個</td><td>167個</td><td>250個</td></tr>
+<tr><th scope="row">60％</th><td>110個</td><td>120個</td><td>150個</td><td>200個</td></tr>
+</tbody></table></div>
+<p>「到達不可」は値引き後の限界利益が0以下になり、元の100個分の限界利益を販売増で取り戻せない条件です。販売数の予測や、セールを勧める表ではありません。</p>
+<h3>表の読み方と計算式</h3>
+<p>例えば、販売価格1,000円・変動費600円なら元の利益率は40％です。10％引きで900円にすると、1個あたり限界利益は400円から300円になります。元の100個分の40,000円を保つには、40,000÷300を切り上げた<strong>134個（34個増）</strong>が必要です。133個では39,900円で届きません。固定費が同じなら、固定費控除後の利益も維持できます。</p>
+<div class="metric"><strong>必要販売数＝現在の販売数×元の利益率÷（元の利益率−値引き率）</strong></div>
+<p>利益率と値引き率は、40と10、または0.40と0.10のように同じ基準で入れ、最後に件数を切り上げます。現在80個・利益率40％・10％引きなら、80×40÷（40−10）を切り上げた<strong>107個</strong>です。表の134個を単純に0.8倍すると、先に切り上げた分まで拡大・縮小してしまうため、式から計算し直してください。</p>
+<p><strong>売上に比例する手数料がある場合は、この早見表をそのまま使いません。</strong>値引きで手数料額も変わるため、前の例のように値引き前後の限界利益を別々に求めます。追加広告費がかかる場合も表の前提から外れます。実際の条件は<a href="#tool">手数料を入力できる無料ツール</a>で確認してください。利益率の区分は<a href="profit-margin-guide.html">利益率・粗利率の計算方法</a>でも整理しています。</p>
 <h2 id="coupon">20個だけにクーポンを使う場合は、全品値引きと分ける</h2>
 <p>100個のうち80個を通常価格、20個を10％引きで販売したとします。同じ費用条件なら、月間利益は1,310×80＋1,025×20−30,000＝<strong>95,300円</strong>です。全100個を通常価格で売る場合より5,700円少なくなります。</p>
 <p>その5,700円を追加の値引き販売だけで埋めるなら、5,700÷1,025を切り上げた<strong>6個の追加販売</strong>が必要です。通常価格80個と値引き26個で、利益は101,450円になります。ただしこれは通常価格の80個が維持され、新たに6個売れ、追加費用が生じない仮定です。</p>
