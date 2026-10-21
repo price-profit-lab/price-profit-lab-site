@@ -70,3 +70,5 @@ a.secondary-button{display:inline-block;text-decoration:none}
 #product-selection select:focus-visible,#selectionHeading:focus{outline:3px solid #d39432;outline-offset:3px}
 .selection-result{background:#fff;border:1px solid #a6b9ad;border-radius:10px;padding:16px;scroll-margin-top:16px}
 .selection-result h3{margin-top:0}
+
+#selectionForm>p{display:flex;flex-wrap:wrap;gap:8px}
