@@ -51,3 +51,10 @@ a.secondary-button{display:inline-block;text-decoration:none}
 [data-result-focus]{scroll-margin-top:16px}
 [data-result-focus]:focus{outline:3px solid #d39432;outline-offset:4px}
 @media print{[data-result-focus]{outline:none!important}}
+
+/* The directory remains fully readable when JavaScript is unavailable. */
+#guide-finder[hidden],[data-guide-group][hidden],[data-guide-entry][hidden],#guideNoResults[hidden]{display:none!important}
+#guide-finder select{display:block;width:100%;min-width:0;padding:12px;border:1px solid #a6b9ad;border-radius:8px;font:inherit;margin-top:6px;background:#fff;color:#17382b}
+#guide-finder button{padding:10px 16px;border:1px solid #205c45;border-radius:8px;background:#fff;color:#205c45;font:inherit;cursor:pointer}
+#guide-finder button:focus-visible,#guide-finder select:focus-visible{outline:3px solid #d39432;outline-offset:3px}
+[data-guide-entry]{margin-block:10px}

@@ -7,6 +7,8 @@ on:
       - 'browser-qa-requirements.txt'
       - '.github/workflows/browser-qa.yml'
       - 'index.html'
+      - 'guides.html'
+      - 'guides-filter.js'
       - 'privacy.html'
       - 'analytics.js'
       - 'analytics-settings.js'
