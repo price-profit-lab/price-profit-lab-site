@@ -332,6 +332,24 @@ def verify_guide_finder(browser, base):
     print("PASS guide finder: keywords, category, combined/empty/reset, mobile, navigation, no network or URL query, no-JS fallback", flush=True)
 
 
+def verify_reverse_price_boundary(browser, base):
+    page = browser.new_page(viewport={"width": 375, "height": 812}, locale="ja-JP")
+    page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+    page.goto(base + "/reverse-price-calculator.html", wait_until="networkidle")
+    for field, value in dict(target="0", fixedCost="0", quantity="1", unitCost="700", flatFee="0", rate="30").items():
+        page.locator("#" + field).fill(value)
+    expect(page.locator("#reversePrice")).to_have_text("1,000円")
+    expect(page.locator("#reverseProfit")).to_have_text("0円")
+    for cell in page.locator("#reverseScenarios tr td:last-child").all():
+        expect(cell).to_have_text("1,000円")
+    page.locator("#unitCost").fill("700.0000000000001")
+    expect(page.locator("#reversePrice")).to_have_text("1,001円")
+    page.locator("#reverseReset").click()
+    expect(page.locator("#reversePrice")).to_have_text("3,411円")
+    page.close()
+    print("PASS reverse price: exact whole-yen boundary, real fraction, sensitivity rows and reset", flush=True)
+
+
 def main():
     OUTPUT.mkdir(exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
@@ -342,6 +360,7 @@ def main():
             browser = playwright.chromium.launch()
             for case in CASES:
                 verify_case(browser, base, case)
+            verify_reverse_price_boundary(browser, base)
             verify_guide_finder(browser, base)
             verify_article_examples(browser, base)
             verify_product_pages(browser, base)
