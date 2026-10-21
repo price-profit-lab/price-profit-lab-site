@@ -97,6 +97,25 @@ function validPurchaseLinks(html,expectedIds){
   if(!tracked&&(!url.hostname.endsWith('.booth.pm')||!url.pathname.startsWith('/items/')))continue;
   const id=url.pathname.match(/^\/items\/(\d+)\/?$/);
   if(url.protocol!=='https:'||url.host!=='price-profit-lab.booth.pm'||!id||!expectedIds.includes(id[1]))return false;
+  // A valid set of item IDs is insufficient: Standard and Pro can be swapped.
+  const labels={'9011039':'Standard','9011528':'Pro'};
+  const rest=markup.slice(anchor.index+anchor[0].length);
+  const closing=rest.search(/<\/a\s*>/i);
+  if(closing<0||/<a\b/i.test(rest.slice(0,closing)))return false;
+  const text=rest.slice(0,closing).replace(/<[^>]*>/g,' ');
+  for(const [item,label] of Object.entries(labels)){
+   if(new RegExp('\\b'+label+'\\b','i').test(text)&&id[1]!==item)return false;
+  }
+  if(tracked){
+   const handler=anchor[0].match(/\sonclick\s*=\s*(["'])([\s\S]*?)\1/i);
+   if(!handler)return false;
+   const decoded=handler[2].replace(/&#(?:0*39|x0*27);|&apos;/gi,"'").replace(/&#(?:0*34|x0*22);|&quot;/gi,'"');
+   const events={'9001298':'booth_product_click','9011039':'booth_standard_click','9011528':'booth_pro_click'};
+   const event=decoded.match(/gtag\(\s*['"]event['"]\s*,\s*['"]([^'"]+)['"]/);
+   const product=decoded.match(/\bproduct_id\s*:\s*['"](\d+)['"]/);
+   if(!event||event[1]!==events[id[1]]||!product||product[1]!==id[1])return false;
+   if(labels[id[1]]&&!new RegExp('\\b'+labels[id[1]]+'\\b','i').test(text))return false;
+  }
   seen.add(id[1]);
  }
  return expectedIds.every(id=>seen.has(id));
