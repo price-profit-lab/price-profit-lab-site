@@ -276,6 +276,39 @@ def verify_product_pages(browser, base):
         page.close()
 
 
+
+def verify_customer_demo(browser, base):
+    for width in (375, 1280):
+        page = browser.new_page(viewport={"width": width, "height": 900}, locale="ja-JP")
+        page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+        page.goto(base + "/service-excel.html", wait_until="networkidle")
+        page.locator('a[href="assets/service-excel-demo.html"]').click()
+        expect(page).to_have_url(base + "/assets/service-excel-demo.html")
+        expect(page.locator("h1")).to_contain_text("3ステップ")
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), (width, "Demo page overflows")
+        expect(page.locator("img")).to_have_count(2)
+        for img in page.locator("img").all():
+            page.wait_for_function("img=>img.complete&&img.naturalWidth>0", arg=img.element_handle())
+        scroller = page.locator(".wide")
+        scroller.focus()
+        expect(scroller).to_be_focused()
+        if width == 375:
+            assert scroller.evaluate("el=>el.scrollWidth>el.clientWidth")
+            scroller.press("ArrowRight")
+            page.wait_for_function("document.activeElement.scrollLeft>0")
+        page.evaluate("scrollTo(0,0)")
+        page.screenshot(path=str(OUTPUT / f"customer-demo-{width}.png"), full_page=True)
+        # Inspect public destinations without requesting the live site or sending GA events.
+        compare = page.locator('a[href="https://price-profit-lab.pages.dev/service-excel#plans"]')
+        expect(compare).to_have_count(1)
+        page.goto(base + "/service-excel.html#plans", wait_until="networkidle")
+        expect(page.locator("#plans h2")).to_be_in_viewport()
+        page.goto(base + "/service-excel-help.html#practice", wait_until="networkidle")
+        expect(page.locator("#practice")).to_be_in_viewport()
+        page.close()
+    print("PASS customer demo: product entry, 375/1280px width, both images, keyboard image scroll and destination anchors", flush=True)
+
+
 def verify_analytics_preferences(browser):
     # Emulate the production origin using local fixture bytes. Never visit production
     # or send requests to Google Analytics from this test.
@@ -570,6 +603,7 @@ def main():
             verify_article_examples(browser, base)
             verify_cancellation_article_examples(browser, base)
             verify_product_pages(browser, base)
+            verify_customer_demo(browser, base)
             verify_analytics_preferences(browser)
             browser.close()
     finally:

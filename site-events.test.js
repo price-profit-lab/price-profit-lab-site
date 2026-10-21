@@ -132,6 +132,39 @@ vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),{document:{addEventL
 assert.doesNotThrow(()=>withoutGa.click({target:{closest(){return {getAttribute(){return 'assets/service-standard-excel-mac.png'}}}}}),'Navigation must not throw when analytics is unavailable');
 console.log('Product screenshot click classification and privacy checks passed');
 
+// Use the real analytics preference gate with the real navigation listener.
+for(const optedOut of [false,true]){
+ const listeners={},events=[],scripts=[];
+ const context={
+  location:{pathname:'/service-excel',hostname:'price-profit-lab.pages.dev'},
+  localStorage:{getItem(){return optedOut?'1':null}},
+  dataLayer:events,addEventListener(){},
+  document:{addEventListener(type,fn){listeners[type]=fn},createElement(){return {}},head:{appendChild(el){scripts.push(el)}}}
+ };
+ context.window=context;
+ vm.runInNewContext(fs.readFileSync('analytics.js','utf8'),context);
+ vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),context);
+ events.length=0;
+ const clickDemo=href=>listeners.click({target:{closest(){return {getAttribute(){return href}}}}});
+ for(const href of ['assets/service-excel-demo.html','./assets/service-excel-demo','assets/service-excel-demo.html?email=private@example.com#demo'])clickDemo(href);
+ assert.equal(events.length,optedOut?0:3,'Demo clicks respect the analytics preference');
+ for(const e of events){
+  assert.equal(e[1],'service_excel_demo_click');
+  assert.deepEqual(Object.keys(e[2]),['source_page']);
+  assert.equal(e[2].source_page,'/service-excel');
+  assert.ok(!JSON.stringify(e).includes('private@example.com'));
+ }
+ const count=events.length;
+ for(const href of ['https://example.com/assets/service-excel-demo.html','assets/service-excel-demo-copy.html','assets/service-excel-demo.html/extra'])clickDemo(href);
+ context.location.pathname='/guides';clickDemo('assets/service-excel-demo.html');
+ assert.equal(events.length,count,'External, lookalike and unrelated-page links are ignored');
+ context.location.pathname='/service-excel.html';clickDemo('assets/service-excel-demo.html');
+ assert.equal(events.length,count+(optedOut?0:1),'Product HTML alias is supported');
+}
+assert.doesNotThrow(()=>withoutGa.click({target:{closest(){return {getAttribute(){return 'assets/service-excel-demo.html'}}}}}));
+console.log('Demo navigation: preference gate, URL privacy, exact destination and source-page checks passed');
+
+
 const helpEvents=[];
 const helpListeners={};
 const helpLocation={pathname:'/product'};

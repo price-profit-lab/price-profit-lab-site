@@ -29,6 +29,8 @@ on:
       - 'product.html'
       - 'product-selection.js'
       - 'service-excel.html'
+      - 'site-events.js'
+      - 'assets/service-excel-demo.html'
       - 'product-help.html'
       - 'service-excel-help.html'
       - 'assets/service-standard-excel-mac.png'
