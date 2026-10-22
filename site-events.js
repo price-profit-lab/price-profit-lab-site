@@ -6,6 +6,15 @@
   if(!anchor||typeof gtag!=='function')return;
   const href=anchor.getAttribute('href')||'';
   const page=typeof location!=='undefined'?location.pathname:'unknown';
+  // Count only entry clicks from the notice guide, not generation or file receipt.
+  // Keep the builder itself offline/private: no instrumentation is added there.
+  if(page==='/service-price-notice-guide'||page==='/service-price-notice-guide.html'){
+   let noticeEvent='';
+   if(/^(?:\.\/)?assets\/service-notice-builder(?:\.html)?(?:[#?].*)?$/.test(href))noticeEvent='notice_builder_open_click';
+   else if(/^(?:\.\/)?assets\/service-notice-builder-free-v1\.zip(?:[#?].*)?$/.test(href))noticeEvent='notice_zip_download_click';
+   else if(/^https:\/\/price-profit-lab\.booth\.pm\/items\/9025062(?:[#?].*)?$/.test(href))noticeEvent='notice_booth_free_click';
+   if(noticeEvent){gtag('event',noticeEvent,{source_page:page});return;}
+  }
   // Count opening the known demo from the product page; never send its URL or query.
   if((page==='/service-excel'||page==='/service-excel.html')&&/^(?:\.\/)?assets\/service-excel-demo(?:\.html)?(?:[#?].*)?$/.test(href)){
    gtag('event','service_excel_demo_click',{source_page:page});

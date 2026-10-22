@@ -269,3 +269,40 @@ marginListeners.click({target:{closest(){return {getAttribute(){return 'profit-m
 assert.equal(marginSelf.length,0);
 console.log('Margin tool navigation, query privacy and self-link exclusion passed');
 
+
+// Free notice entry metrics must remain distinct from paid-product events.
+for(const hostname of ['price-profit-lab.pages.dev','preview.pages.dev'])for(const optedOut of [false,true]){
+ const listeners={},events=[];
+ const context={location:{pathname:'/service-price-notice-guide',hostname},
+  localStorage:{getItem(){return optedOut?'1':null}},dataLayer:events,addEventListener(){},
+  document:{addEventListener(type,fn){listeners[type]=fn},createElement(){return {}},head:{appendChild(){}}}};
+ context.window=context;
+ vm.runInNewContext(fs.readFileSync('analytics.js','utf8'),context);
+ vm.runInNewContext(fs.readFileSync('site-events.js','utf8'),context);
+ events.length=0;
+ const click=href=>listeners.click({target:{closest(){return {getAttribute(){return href}}}}});
+ const enabled=hostname==='price-profit-lab.pages.dev'&&!optedOut;
+ const targets=[['assets/service-notice-builder.html','notice_builder_open_click'],
+  ['./assets/service-notice-builder','notice_builder_open_click'],
+  ['assets/service-notice-builder-free-v1.zip','notice_zip_download_click'],
+  ['https://price-profit-lab.booth.pm/items/9025062','notice_booth_free_click']];
+ for(const [href] of targets)click(href+'?private=do-not-send#private');
+ assert.equal(events.length,enabled?targets.length:0);
+ for(let i=0;i<events.length;i++){
+  assert.equal(events[i][1],targets[i][1]);
+  assert.deepEqual(Object.keys(events[i][2]),['source_page']);
+  assert.equal(events[i][2].source_page,'/service-price-notice-guide');
+  assert.ok(!JSON.stringify(events[i]).includes('do-not-send'));
+ }
+ const count=events.length;
+ for(const href of ['https://example.com/assets/service-notice-builder.html',
+  'assets/service-notice-builder-copy.html','assets/service-notice-builder.html/extra',
+  'https://price-profit-lab.booth.pm/items/90250620',
+  'https://price-profit-lab.booth.pm.evil.test/items/9025062',
+  'https://price-profit-lab.booth.pm/items/9011039'])click(href);
+ context.location.pathname='/shipping-profit-guide';for(const [href] of targets)click(href);
+ assert.equal(events.length,count,'Lookalikes, paid products and unrelated source pages are ignored');
+ context.location.pathname='/service-price-notice-guide.html';click(targets[0][0]);
+ assert.equal(events.length,count+(enabled?1:0));
+}
+console.log('Free notice entry metrics: fixed labels, paid-product separation, privacy and preference gate passed');
