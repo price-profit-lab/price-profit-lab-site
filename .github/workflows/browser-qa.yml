@@ -30,6 +30,10 @@ on:
       - 'product-selection.js'
       - 'service-excel.html'
       - 'assets/service-notice-builder.html'
+      - 'assets/service-notice-builder-offline.html'
+      - 'assets/service-notice-builder-free-v1.zip'
+      - 'build-service-notice-package.py'
+      - 'service-notice-package-README.txt'
       - 'assets/service-notice-builder.js'
       - 'service-notice-builder.test.js'
       - 'service-price-notice-guide.html'
@@ -62,7 +66,7 @@ jobs:
           python -m playwright install --with-deps chromium
           sudo apt-get install -y fonts-noto-cjk
       - name: Verify calculators, PDFs and product pages on localhost
-        run: python browser-qa.py
+        run: python build-service-notice-package.py && python browser-qa.py
       - name: Retain sample-only screenshots and PDFs for review
         if: always()
         uses: actions/upload-artifact@v4
