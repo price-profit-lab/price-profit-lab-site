@@ -309,6 +309,54 @@ def verify_customer_demo(browser, base):
     print("PASS customer demo: product entry, 375/1280px width, both images, keyboard image scroll and destination anchors", flush=True)
 
 
+
+def verify_notice_builder(browser, base):
+    for width in (320, 375, 1280):
+        context = browser.new_context(viewport={"width": width, "height": 900}, locale="ja-JP", accept_downloads=True)
+        external = []
+        def route_request(route):
+            if route.request.url.startswith(base + "/"):
+                route.continue_()
+            else:
+                external.append(route.request.url)
+                route.abort()
+        context.route("**/*", route_request)
+        page = context.new_page()
+        page.goto(base + "/service-price-notice-guide.html", wait_until="networkidle")
+        page.locator('a[href="assets/service-notice-builder.html"]').click()
+        expect(page.locator("#noticeForm")).to_be_visible()
+        for name, value in {"name":"架空教室", "menu":"個人レッスン", "unit":"1名・1回60分", "old":"8000", "next":"8000", "date":"2026-11-01", "reason":"運営費の上昇", "contact":"店頭でご確認ください"}.items():
+            page.locator(f'[name="{name}"]').fill(value)
+        for name, value in {"tax":"税込", "basis":"use", "bookings":"old", "tickets":"none"}.items():
+            page.locator(f'[name="{name}"]').select_option(value)
+        page.get_by_role("button", name="文面を作る", exact=True).click()
+        expect(page.locator("#noticeResult")).to_be_hidden()
+        expect(page.locator("#noticeStatus")).to_contain_text("新料金を旧料金より高く")
+        page.locator('[name="next"]').fill("9200")
+        page.get_by_role("button", name="文面を作る", exact=True).click()
+        expect(page.locator("#noticeResult")).to_be_focused()
+        text = page.locator("#fullNotice").input_value()
+        assert "2026年11月1日以降のご利用分から" in text and "9,200円" in text
+        assert page.evaluate("document.documentElement.scrollWidth<=innerWidth+1"), (width, "Builder overflows")
+        with page.expect_download() as download_info:
+            page.get_by_role("button", name="掲示用をテキスト保存", exact=True).click()
+        download = download_info.value
+        assert download.suggested_filename == "price-change-notice.txt"
+        assert Path(download.path()).read_text() == text
+        page.locator('[name="basis"]').select_option("booking")
+        expect(page.locator("#noticeResult")).to_be_hidden()
+        page.locator('[name="bookings"]').select_option("custom")
+        expect(page.locator('[name="bookingText"]')).to_be_visible()
+        page.locator('[name="bookingText"]').fill("10月受付分は旧料金です。")
+        page.get_by_role("button", name="文面を作る", exact=True).click()
+        assert "以降に受け付けるご予約から" in page.locator("#shortNotice").input_value()
+        assert "10月受付分は旧料金です。" in page.locator("#fullNotice").input_value()
+        page.screenshot(path=str(OUTPUT / f"notice-builder-{width}.png"))
+        assert not external, external
+        context.close()
+    print("PASS notice builder: 320/375/1280px, dates, application basis, validation, stale-output hiding, local text download and no external requests", flush=True)
+
+
 def verify_analytics_preferences(browser):
     # Emulate the production origin using local fixture bytes. Never visit production
     # or send requests to Google Analytics from this test.
@@ -604,6 +652,7 @@ def main():
             verify_cancellation_article_examples(browser, base)
             verify_product_pages(browser, base)
             verify_customer_demo(browser, base)
+            verify_notice_builder(browser, base)
             verify_analytics_preferences(browser)
             browser.close()
     finally:
