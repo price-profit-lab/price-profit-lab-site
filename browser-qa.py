@@ -357,6 +357,41 @@ def verify_notice_builder(browser, base):
     print("PASS notice builder: 320/375/1280px, dates, application basis, validation, stale-output hiding, local text download and no external requests", flush=True)
 
 
+
+def verify_offline_notice(browser, base):
+    import zipfile
+    import tempfile
+    archive_path = ROOT / "assets/service-notice-builder-free-v1.zip"
+    with zipfile.ZipFile(archive_path) as archive:
+        assert archive.testzip() is None
+        assert archive.namelist() == ["notice-builder.html", "README.txt"]
+        assert archive.read("notice-builder.html") == (ROOT / "assets/service-notice-builder-offline.html").read_bytes()
+        with tempfile.TemporaryDirectory() as directory:
+            archive.extractall(directory)
+            context = browser.new_context(viewport={"width": 1280, "height": 900}, locale="ja-JP", offline=True)
+            requests = []
+            page = context.new_page()
+            page.on("request", lambda request: requests.append(request.url) if request.url.startswith(("http:", "https:")) else None)
+            page.goto((Path(directory) / "notice-builder.html").as_uri())
+            expect(page.locator("#noticeForm")).to_be_visible()
+            for name, value in {"name":"架空教室", "menu":"個人レッスン", "unit":"1名・1回60分", "old":"8000", "next":"9200", "date":"2026-11-01", "reason":"運営費の上昇", "contact":"店頭でご確認ください"}.items():
+                page.locator(f'[name="{name}"]').fill(value)
+            for name, value in {"tax":"税込", "basis":"use", "bookings":"old", "tickets":"none"}.items():
+                page.locator(f'[name="{name}"]').select_option(value)
+            page.get_by_role("button", name="文面を作る", exact=True).click()
+            assert "9,200円" in page.locator("#fullNotice").input_value()
+            assert not requests, requests
+            context.close()
+    context = browser.new_context(accept_downloads=True)
+    page = context.new_page()
+    page.goto(base + "/service-price-notice-guide.html")
+    with page.expect_download() as info:
+        page.locator('a[href="assets/service-notice-builder-free-v1.zip"]').click()
+    assert Path(info.value.path()).read_bytes() == archive_path.read_bytes()
+    context.close()
+    print("PASS portable notice: article download, ZIP content parity, file-origin generation with network offline", flush=True)
+
+
 def verify_analytics_preferences(browser):
     # Emulate the production origin using local fixture bytes. Never visit production
     # or send requests to Google Analytics from this test.
@@ -653,6 +688,7 @@ def main():
             verify_product_pages(browser, base)
             verify_customer_demo(browser, base)
             verify_notice_builder(browser, base)
+            verify_offline_notice(browser, base)
             verify_analytics_preferences(browser)
             browser.close()
     finally:
