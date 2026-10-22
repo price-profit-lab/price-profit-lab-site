@@ -48,3 +48,10 @@ ProにはStandardの基本機能が含まれるため、両方の購入は不要
 - 公開環境: Cloudflare Pages
 
 サービスに関する案内は、個人名ではなく「価格と利益の計算室」のブランド名で行っています。
+
+
+### Free BOOTH download filename check
+
+`node booth-free-download-check.js /path/to/public-listing.html` inspects already-fetched public HTML for item 9025062. Exit 0: filename and displayed free price match; exit 1: an unexpected or extra distribution file or price is visible; exit 2: unverified (login, blocking, missing markup, wrong item, or unreadable file). It never downloads or runs a distributed ZIP and does not authenticate, edit, send messages, or create a schedule.
+
+Use it when the existing weekly review already retrieves the public listing. The expected archive is `service-notice-builder-free-v1.zip`; a filename match does not prove ZIP contents, successful download, public/private status, or sales. Do not classify blocked pages as a missing product or repeat paid browser runs to make this check pass. A product version change requires updating the expectation intentionally.

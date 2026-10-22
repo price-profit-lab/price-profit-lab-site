@@ -28,6 +28,8 @@ on:
       - 'assets/service-notice-builder.js'
       - 'service-notice-builder.test.js'
       - 'site-events.test.js'
+      - 'booth-free-download-check.js'
+      - 'booth-free-download-check.test.js'
       - 'en/index.test.js'
       - 'price-increase-calculator.js'
       - 'price-increase-calculator.test.js'
@@ -64,6 +66,8 @@ on:
       - 'assets/service-notice-builder.js'
       - 'service-notice-builder.test.js'
       - 'site-events.test.js'
+      - 'booth-free-download-check.js'
+      - 'booth-free-download-check.test.js'
       - 'en/index.test.js'
       - 'price-increase-calculator.js'
       - 'price-increase-calculator.test.js'
@@ -87,4 +91,4 @@ jobs:
       - name: Validate calculator syntax and legacy regression cases
         run: node --check calculator.js && node test-calculator.js && node test-calculator-ui.js
       - name: Test profit calculation and boundary cases
-        run: node en/index.test.js && node cancellation-calculator.test.js && node calculator.test.js && node analytics.test.js && node calculator-navigation.test.js && node profit-margin.test.js && node calculator.dom.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-events.test.js && node service-notice-builder.test.js && node price-increase-calculator.test.js && node production-smoke.unit.test.js && node site-audit.test.js
+        run: node en/index.test.js && node cancellation-calculator.test.js && node calculator.test.js && node analytics.test.js && node calculator-navigation.test.js && node profit-margin.test.js && node calculator.dom.test.js && node reverse-price.test.js && node reverse-price.dom.test.js && node site-events.test.js && node service-notice-builder.test.js && node price-increase-calculator.test.js && node booth-free-download-check.test.js && node production-smoke.unit.test.js && node site-audit.test.js

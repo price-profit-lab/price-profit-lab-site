@@ -1,0 +1,23 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {inspect}=require('./booth-free-download-check');
+const file='service-notice-builder-free-v1.zip';
+const anchor=(name,host='booth.pm')=>`<a title="${name}" href="https://${host}/downloadables/9953781?variation_id=15076142">無料ダウンロード</a>`;
+const page=(links,price='¥ 0')=>`<html><head><meta property="og:url" content="https://price-profit-lab.booth.pm/items/9025062"><title>【無料】料金改定のお知らせ作成ひな形 - BOOTH</title></head><body><div class="state-private" style="display:none">非公開中</div><div class="variation-price">${price}</div>${links}</body></html>`;
+assert.equal(inspect(page(anchor(file))).status,'matches');
+assert.equal(inspect(page(anchor(file)+anchor(file))).status,'matches','Repeated display of same file is allowed');
+assert.equal(inspect(page(anchor('verify_stripe_test.py.zip'))).status,'mismatch','Regression: wrong archive from another project');
+assert.equal(inspect(page(anchor(file)+anchor('extra.zip'))).status,'mismatch','Extra distribution file must be detected');
+assert.equal(inspect(page(anchor(file),'¥ 100')).status,'mismatch');
+assert.equal(inspect(page(anchor(file),'¥ 10')).status,'mismatch','Price ending in zero is not free');
+assert.equal(inspect(page(`<p>${file}</p>`)).status,'unverified','Description alone cannot verify file');
+assert.equal(inspect(page(anchor(file,'booth.pm.example.com'))).status,'unverified');
+assert.equal(inspect(page('<!--'+anchor(file)+'-->')).status,'unverified');
+assert.equal(inspect(page('<script>'+anchor(file)+'</script>')).status,'unverified');
+assert.equal(inspect('<html><title>ログイン - BOOTH</title></html>').status,'unverified');
+assert.equal(inspect('<html><title>Just a moment...</title></html>').status,'unverified');
+assert.equal(inspect('').status,'unverified');
+assert.equal(inspect(page(anchor(file)).replace(/<div class="variation-price">.*?<\/div>/,'' )).status,'unverified');
+console.log('BOOTH free download metadata: wrong/extra ZIP, price, login/blocking and description-only regressions passed');
+
+assert.equal(inspect(page(anchor(file)).replace('items/9025062','items/9999999')).status,'unverified');
