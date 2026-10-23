@@ -137,7 +137,7 @@ function validResponse(path,res,assets,expectedHeading,expectedAssetHash){
   '/product':['https://price-profit-lab.booth.pm/items/9001298'],
   '/':['href="service-excel.html"'],
   '/service-excel':['https://price-profit-lab.booth.pm/items/9011039','https://price-profit-lab.booth.pm/items/9011528','1,480円','2,980円','href="service-pricing-guide.html"'],
-  '/service-pricing-guide':['<h1>サービス業の料金の決め方','165,600円','195,420円','href="service-excel.html"'],
+  '/service-pricing-guide':['id="excel-formulas"','data-formula-cell="B14"','165,600円','195,420円','href="service-excel.html"'],
   '/guides':['href="service-pricing-guide.html"'],
   '/en/':['<html lang="en"','id="oldPrice"','id="newPrice"','id="error"']
  };
