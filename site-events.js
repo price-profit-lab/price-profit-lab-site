@@ -15,8 +15,8 @@
    else if(/^https:\/\/price-profit-lab\.booth\.pm\/items\/9025062(?:[#?].*)?$/.test(href))noticeEvent='notice_booth_free_click';
    if(noticeEvent){gtag('event',noticeEvent,{source_page:page});return;}
   }
-  // Count opening the known demo from the product page; never send its URL or query.
-  if((page==='/service-excel'||page==='/service-excel.html')&&/^(?:\.\/)?assets\/service-excel-demo(?:\.html)?(?:[#?].*)?$/.test(href)){
+  // Count opening the known demo from the product or cancellation page; never send its URL or query.
+  if(['/service-excel','/service-excel.html','/cancellation-calculator','/cancellation-calculator.html'].includes(page)&&/^(?:\.\/)?assets\/service-excel-demo(?:\.html)?(?:[#?].*)?$/.test(href)){
    gtag('event','service_excel_demo_click',{source_page:page});
    return;
   }
