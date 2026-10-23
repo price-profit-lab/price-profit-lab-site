@@ -289,7 +289,7 @@ def verify_customer_demo(browser, base):
         page = browser.new_page(viewport={"width": width, "height": 900}, locale="ja-JP")
         page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
         page.goto(base + "/service-excel.html", wait_until="networkidle")
-        page.locator('a[href="assets/service-excel-demo.html"]').click()
+        page.locator('.hero a[href="assets/service-excel-demo.html"]').click()
         expect(page).to_have_url(base + "/assets/service-excel-demo.html")
         expect(page.locator("h1")).to_contain_text("3ステップ")
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), (width, "Demo page overflows")
@@ -305,6 +305,25 @@ def verify_customer_demo(browser, base):
             page.wait_for_function("document.activeElement.scrollLeft>0")
         page.evaluate("scrollTo(0,0)")
         page.screenshot(path=str(OUTPUT / f"customer-demo-{width}.png"), full_page=True)
+        # Verify plan destinations and event payloads locally, without navigating to BOOTH.
+        plan_links = page.locator('#choose-plan a[data-ga4-booth-click="1"]')
+        expect(plan_links).to_have_count(2)
+        assert plan_links.evaluate_all("els=>els.map(el=>el.href)") == [
+            "https://price-profit-lab.booth.pm/items/9011039",
+            "https://price-profit-lab.booth.pm/items/9011528",
+        ]
+        events = page.evaluate("""() => {
+            const events = [];
+            window.gtag = (...args) => events.push(args);
+            for (const link of document.querySelectorAll('#choose-plan a[data-ga4-booth-click="1"]')) link.onclick();
+            return events;
+        }""")
+        assert [event[1] for event in events] == ["booth_standard_click", "booth_pro_click"], events
+        assert [event[2]["product_id"] for event in events] == ["9011039", "9011528"], events
+        for event in events:
+            assert event[2]["source_page"] == "/assets/service-excel-demo.html", events
+            assert set(event[2]) == {"product_id", "source_page", "link_url", "transport_type"}, events
+            assert event[2]["transport_type"] == "beacon", events
         # Inspect public destinations without requesting the live site or sending GA events.
         compare = page.locator('a[href="https://price-profit-lab.pages.dev/service-excel#plans"]')
         expect(compare).to_have_count(1)
@@ -313,7 +332,7 @@ def verify_customer_demo(browser, base):
         page.goto(base + "/service-excel-help.html#practice", wait_until="networkidle")
         expect(page.locator("#practice")).to_be_in_viewport()
         page.close()
-    print("PASS customer demo: product entry, 375/1280px width, both images, keyboard image scroll and destination anchors", flush=True)
+    print("PASS customer demo: hero entry, 375/1280px width, images, keyboard scroll, plan destinations and local event payloads", flush=True)
 
 
 
