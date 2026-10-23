@@ -29,6 +29,7 @@ on:
       - 'product.html'
       - 'product-selection.js'
       - 'service-excel.html'
+      - 'service-pricing-guide.html'
       - 'assets/service-notice-builder.html'
       - 'assets/service-notice-builder-offline.html'
       - 'assets/service-notice-builder-free-v1.zip'
