@@ -694,6 +694,33 @@ def verify_homepage_entry(browser, base):
     print("PASS homepage entry: 5 destinations, mobile/desktop, sample result unchanged, inputs before industry guide, no-JS links", flush=True)
 
 
+def verify_cancellation_demo_entry(browser, base):
+    for width in [375, 1280]:
+        page = browser.new_page(viewport={"width": width, "height": 900}, locale="ja-JP")
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(base + "/") else route.abort())
+        page.goto(base + "/cancellation-calculator.html", wait_until="networkidle")
+        page.locator("#cancel-cancellation").fill("7.5")
+        expect(page.locator("#cancel-result-profit")).to_have_text("188,280円")
+        demo = page.get_by_role("link", name="実画面の3ステップ実演を見る（無料）", exact=True)
+        expect(demo).to_have_count(1)
+        demo.scroll_into_view_if_needed()
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
+        box = demo.bounding_box()
+        assert box and box["x"] >= 0 and box["x"] + box["width"] <= width + 1
+        page.screenshot(path=str(OUTPUT / f"cancellation-demo-entry-{width}.png"))
+        demo.focus()
+        demo.press("Enter")
+        expect(page).to_have_url(base + "/assets/service-excel-demo.html")
+        expect(page.locator("h1")).to_be_visible()
+        for item in ["9011039", "9011528"]:
+            expect(page.locator(f'a[href="https://price-profit-lab.booth.pm/items/{item}"]')).to_have_count(1)
+        assert not errors, errors
+        page.close()
+    print("PASS cancellation demo entry: mobile/desktop CTA layout, keyboard navigation, unchanged calculation, no input in destination URL and both product destinations", flush=True)
+
+
 def main():
     OUTPUT.mkdir(exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
@@ -713,6 +740,7 @@ def main():
             verify_cancellation_article_examples(browser, base)
             verify_product_pages(browser, base)
             verify_customer_demo(browser, base)
+            verify_cancellation_demo_entry(browser, base)
             verify_notice_builder(browser, base)
             verify_offline_notice(browser, base)
             verify_analytics_preferences(browser)

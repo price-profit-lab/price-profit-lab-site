@@ -133,10 +133,10 @@ assert.doesNotThrow(()=>withoutGa.click({target:{closest(){return {getAttribute(
 console.log('Product screenshot click classification and privacy checks passed');
 
 // Use the real analytics preference gate with the real navigation listener.
-for(const optedOut of [false,true]){
+for(const sourcePage of ['/service-excel','/service-excel.html','/cancellation-calculator','/cancellation-calculator.html'])for(const optedOut of [false,true]){
  const listeners={},events=[],scripts=[];
  const context={
-  location:{pathname:'/service-excel',hostname:'price-profit-lab.pages.dev'},
+  location:{pathname:sourcePage,hostname:'price-profit-lab.pages.dev'},
   localStorage:{getItem(){return optedOut?'1':null}},
   dataLayer:events,addEventListener(){},
   document:{addEventListener(type,fn){listeners[type]=fn},createElement(){return {}},head:{appendChild(el){scripts.push(el)}}}
@@ -151,7 +151,7 @@ for(const optedOut of [false,true]){
  for(const e of events){
   assert.equal(e[1],'service_excel_demo_click');
   assert.deepEqual(Object.keys(e[2]),['source_page']);
-  assert.equal(e[2].source_page,'/service-excel');
+  assert.equal(e[2].source_page,sourcePage);
   assert.ok(!JSON.stringify(e).includes('private@example.com'));
  }
  const count=events.length;
