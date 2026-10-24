@@ -212,7 +212,7 @@ def verify_product_pages(browser, base):
                 expect(scope).to_be_visible()
                 expect(scope).to_contain_text("StandardのMac・Windowsでの確認範囲")
                 expect(page.locator("#standard-format-check")).to_contain_text("保存して閉じた後の再表示と値の保持を確認")
-                expect(page.get_by_text("StandardをWindowsで保存して再び開く操作の最終確認は未完了です。", exact=True)).to_be_visible()
+                expect(page.get_by_text("StandardはWindowsで、保存して開き直す操作も確認済みです。", exact=True)).to_be_visible()
                 expect(scope).to_contain_text("ブラウザー版Excel、Googleスプレッドシート、Numbers、スマートフォンでのExcel編集・再計算は動作未確認です。")
                 expect(page.get_by_text("改善レポートの印刷で項目と数値が別ページになる場合は、印刷設定の「すべての列を1ページに印刷」を選択してください。", exact=True)).to_be_visible()
                 page.goto(base + "/" + product + ".html", wait_until="networkidle")
